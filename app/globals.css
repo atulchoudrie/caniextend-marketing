@@ -135,6 +135,109 @@ body {
   display: none;
 }
 
+/* Hero primary CTA */
+.hero-cta-primary {
+  background: #4A7FA5;
+  box-shadow: 0 0 0 0 rgba(74,127,165,0);
+  transition: background 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+.hero-cta-primary:hover {
+  background: #3d6e91;
+  box-shadow: 0 4px 20px rgba(74,127,165,0.35);
+  transform: translateY(-1px);
+}
+.hero-cta-primary:active {
+  transform: translateY(0);
+}
+.hero-cta-primary:focus-visible {
+  outline: 2px solid #7BAFD4;
+  outline-offset: 3px;
+}
+
+/* Scroll cue */
+.scroll-cue {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.35), transparent);
+  animation: scroll-cue-fade 2s ease-in-out infinite;
+}
+@keyframes scroll-cue-fade {
+  0%, 100% { opacity: 0; transform: scaleY(0.6); transform-origin: top; }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+/* Cost feature section */
+.cost-feature-bg {
+  background-color: #0B1929;
+  background-image:
+    linear-gradient(rgba(74,127,165,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74,127,165,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Hero animated floorplan */
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes node-appear {
+  from { opacity: 0; transform: scale(0); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scan-pulse {
+  0%   { y: 0;    opacity: 0; }
+  5%   { opacity: 0.6; }
+  95%  { opacity: 0.6; }
+  100% { y: 220;  opacity: 0; }
+}
+
+/* House main body: perimeter 2*(140+100)=480 */
+.fp-house {
+  stroke-dasharray: 480;
+  stroke-dashoffset: 480;
+  animation: draw 1.1s ease-out 0.4s forwards;
+}
+
+/* Roof: two segments ~116px each = ~233 */
+.fp-roof {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  animation: draw 0.75s ease-out 1.3s forwards;
+}
+
+/* Door + windows */
+.fp-detail {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw 0.45s ease-out 1.9s forwards;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+/* Override opacity with a separate fade */
+.fp-detail {
+  animation: draw 0.45s ease-out 1.9s forwards, node-appear 0.3s ease 1.9s forwards;
+}
+
+/* Extension: perimeter 2*(60+80)=280 */
+.fp-extension {
+  stroke-dasharray: 280;
+  stroke-dashoffset: 280;
+  animation: draw 0.8s ease-out 2.3s forwards;
+}
+
+.fp-extension-detail {
+  opacity: 0;
+  animation: node-appear 0.4s ease 2.9s forwards;
+}
+
+/* Corner nodes */
+.fp-node {
+  opacity: 0;
+  transform-origin: center;
+  animation: node-appear 0.3s ease forwards;
+}
+
 /* Reduced motion overrides */
 @media (prefers-reduced-motion: reduce) {
   .reveal,
@@ -150,4 +253,11 @@ body {
     opacity: 1 !important;
     transform: none !important;
   }
+  .fp-house, .fp-roof, .fp-detail, .fp-extension, .fp-extension-detail, .fp-node {
+    animation: none !important;
+    opacity: 1 !important;
+    stroke-dashoffset: 0 !important;
+  }
+  .scroll-cue { animation: none !important; }
+  .hero-cta-primary { transition: none !important; }
 }
