@@ -5,10 +5,16 @@ import { useState, useEffect, useRef } from "react";
 /* ── Hooks ─────────────────────────────────────────────────────────── */
 function useReveal() {
   useEffect(() => {
-    const els = document.querySelectorAll<HTMLElement>(".reveal");
+    const els = document.querySelectorAll<HTMLElement>(".reveal, .reveal-left, .reveal-right");
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("visible")),
-      { threshold: 0.1 }
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("visible");
+            io.unobserve(e.target);
+          }
+        }),
+      { threshold: 0.15 }
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
@@ -379,10 +385,10 @@ function HowItWorks() {
           {steps.map((step, i) => (
             <div
               key={step.number}
-              className={`reveal flex flex-col lg:flex-row items-center gap-10 lg:gap-16 ${
+              className={`${i % 2 === 1 ? "reveal-left" : "reveal-right"} flex flex-col lg:flex-row items-center gap-10 lg:gap-16 ${
                 i % 2 === 1 ? "lg:flex-row-reverse" : ""
               }`}
-              style={{ transitionDelay: `${i * 0.12}s` }}
+              style={{ transitionDelay: `${i * 0.15}s` }}
             >
               <div className="w-full lg:w-1/2 flex justify-center">
                 {step.visual}
