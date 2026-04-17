@@ -389,8 +389,8 @@ export default function Home() {
             Upload a floorplan. Our AI designs your extension, checks planning permission, estimates costs, and compares your neighbours — in under ten minutes.
           </p>
           <div className="hero-actions reveal reveal-delay-3">
-            <a href="/proposals" className="btn-primary">Upload your floorplan →</a>
-            <a href="features.html" className="btn-ghost">See how it works</a>
+            <a href="/proposals" className="btn-gold">Upload your floorplan →</a>
+            <a href="#feat-planning" className="btn-ghost">See how it works</a>
           </div>
           <div className="hero-social reveal reveal-delay-3">
             <div className="hero-social-faces">
@@ -493,6 +493,20 @@ export default function Home() {
       <div className="counter-section">
         <div className="counter-value reveal">2,847</div>
         <div className="counter-sub reveal reveal-delay-1">extensions designed and counting</div>
+        <div className="counter-substats reveal reveal-delay-2">
+          <div className="counter-substat">
+            <div className="counter-substat-num">47</div>
+            <div className="counter-substat-label">postcodes covered</div>
+          </div>
+          <div className="counter-substat">
+            <div className="counter-substat-num">9 min</div>
+            <div className="counter-substat-label">average to results</div>
+          </div>
+          <div className="counter-substat">
+            <div className="counter-substat-num">100%</div>
+            <div className="counter-substat-label">online — no calls</div>
+          </div>
+        </div>
       </div>
 
       {/* FINAL CTA */}
@@ -504,7 +518,7 @@ export default function Home() {
         </h2>
         <p className="final-cta-sub reveal reveal-delay-1">Upload a floorplan. Get your report in 10 minutes.</p>
         <div className="final-cta-actions reveal reveal-delay-2">
-          <a href="/proposals" className="btn-primary" style={{ fontSize: 17, padding: "18px 48px" }}>
+          <a href="/proposals" className="btn-gold" style={{ fontSize: 17, padding: "18px 48px" }}>
             Get started — it&rsquo;s free →
           </a>
         </div>

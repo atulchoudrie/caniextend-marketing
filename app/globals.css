@@ -208,6 +208,25 @@ body {
   border-color: rgba(255,255,255,0.45);
   transform: translateY(-1px);
 }
+.btn-gold {
+  background: var(--gold);
+  color: var(--navy-deep);
+  text-decoration: none;
+  padding: 16px 36px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-gold:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(200,155,60,0.35);
+}
 
 .hero-social {
   margin-top: 56px;
@@ -369,15 +388,15 @@ body {
 .feature {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  min-height: 90vh;
-  align-items: center;
+  min-height: 560px;
+  align-items: stretch;
 }
 .feature.dark { background: var(--navy-deep); color: white; }
 .feature.light { background: var(--stone); color: var(--charcoal); }
 .feature.reversed .feature-copy { order: 2; }
 .feature.reversed .feature-demo { order: 1; }
 
-.feature-copy { padding: 80px 64px; }
+.feature-copy { padding: 72px 64px; display: flex; flex-direction: column; justify-content: center; }
 .feature-index {
   font-size: 11px;
   font-weight: 600;
@@ -432,11 +451,11 @@ body {
 
 .feature-demo {
   background: var(--navy-mid);
-  min-height: 90vh;
+  min-height: 480px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px;
+  padding: 56px 48px;
   position: relative;
   overflow: hidden;
 }
@@ -670,7 +689,7 @@ body {
 /* ─── COUNTER ─── */
 .counter-section {
   background: var(--navy-deep);
-  padding: 100px 48px;
+  padding: 80px 48px;
   text-align: center;
   border-top: 1px solid rgba(255,255,255,0.05);
 }
@@ -683,6 +702,22 @@ body {
   margin-bottom: 12px;
 }
 .counter-sub { font-size: 18px; color: rgba(255,255,255,0.4); letter-spacing: 0.02em; }
+.counter-substats {
+  display: flex;
+  justify-content: center;
+  gap: 48px;
+  margin-top: 48px;
+  flex-wrap: wrap;
+}
+.counter-substat { text-align: center; }
+.counter-substat-num {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 3vw, 36px);
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.counter-substat-label { font-size: 12px; color: rgba(255,255,255,0.35); letter-spacing: 0.1em; text-transform: uppercase; }
 
 /* ─── FINAL CTA ─── */
 .final-cta {
