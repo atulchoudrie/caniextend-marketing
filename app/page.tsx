@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 /* ── Hooks ─────────────────────────────────────────────────────────── */
 function useReveal() {
@@ -197,49 +197,6 @@ function BlueprintSVG() {
   );
 }
 
-/* ── Planning Demo ─────────────────────────────────────────────────── */
-function PlanningDemo() {
-  const { ref, inView } = useInView(0.3);
-
-  const checks = [
-    { status: "pass" as const, title: "Height limit", desc: "3.0m extension ≤ 4.0m maximum single-storey", delay: 0 },
-    { status: "pass" as const, title: "Rear setback", desc: "Does not project beyond rear of original dwelling", delay: 200 },
-    { status: "pass" as const, title: "Side boundary", desc: "1.2m clear of boundary — minimum 1.0m required", delay: 400 },
-    { status: "warn" as const, title: "Eaves height", desc: "Within 2m of boundary — materials must match", delay: 600 },
-    { status: "pass" as const, title: "Conservation area", desc: "Not in designated conservation area", delay: 800 },
-  ];
-
-  return (
-    <div className="planning-demo" ref={ref}>
-      <div className="planning-title">Planning Assessment</div>
-      <div className="planning-sub">14 Carlisle Road, SW11 6PD</div>
-      {checks.map((c, i) => (
-        <CheckItem key={i} {...c} inView={inView} />
-      ))}
-      <div className={`planning-result ${inView ? "visible" : ""}`} style={{ transitionDelay: inView ? "1.4s" : "0s" }}>
-        <div className="planning-result-icon">📋</div>
-        <div className="planning-result-text">
-          <strong>Permitted Development — 4/5 passed</strong>
-          <span>No planning application required. One advisory note.</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CheckItem({ status, title, desc, delay, inView }: { status: "pass" | "warn"; title: string; desc: string; delay: number; inView: boolean }) {
-  return (
-    <div className={`check-item ${inView ? "visible" : ""}`} style={{ transitionDelay: inView ? `${delay + 300}ms` : "0s" }}>
-      <div className={`check-icon ${status}`}>{status === "pass" ? "✓" : "!"}</div>
-      <div className="check-text">
-        <strong>{title}</strong>
-        <span>{desc}</span>
-      </div>
-      <span className={`check-badge ${status}`}>{status === "pass" ? "Pass" : "Note"}</span>
-    </div>
-  );
-}
-
 /* ── Cost Demo ─────────────────────────────────────────────────────── */
 function CostDemo() {
   const { ref, inView } = useInView(0.3);
@@ -294,51 +251,6 @@ function CostDemo() {
       <div className="cost-regional">
         <span>📍</span>
         Based on Q1 2026 BCIS rates for South West London. Updated quarterly.
-      </div>
-    </div>
-  );
-}
-
-/* ── Neighbour Demo ────────────────────────────────────────────────── */
-function NeighbourDemo() {
-  const { ref, inView } = useInView(0.25);
-
-  const houses = [
-    { label: "No. 8", ext: "+18m²", height: 55, flex: 0.85, delay: 0, yours: false },
-    { label: "No. 10", ext: "+52m²", height: 68, flex: 1.1, delay: 200, yours: false },
-    { label: "No. 14 (You)", ext: "YOUR PLAN +36m²", height: 76, flex: 1.25, delay: 100, yours: true },
-    { label: "No. 16", ext: "No ext.", height: 50, flex: 0.9, delay: 300, yours: false },
-    { label: "No. 18", ext: "+12m²", height: 62, flex: 1.0, delay: 450, yours: false },
-  ];
-
-  const stats = [
-    { value: "3/4", label: "neighbours have extended", color: "var(--blue)", delay: 0 },
-    { value: "100%", label: "planning approval rate on this street", color: "#1a7f5a", delay: 150 },
-    { value: "+36m²", label: "your proposed extension size", color: undefined, delay: 300 },
-    { value: "+£68k", label: "estimated added property value", color: undefined, delay: 450 },
-  ];
-
-  return (
-    <div className="neighbour-demo" ref={ref}>
-      <div className="street-label">Carlisle Road, SW11</div>
-      <div className="street-view">
-        {houses.map((h, i) => (
-          <div key={i} className={`house ${inView ? "visible" : ""}`} style={{ flex: h.flex, transitionDelay: inView ? `${h.delay + 300}ms` : "0s" }}>
-            <div className={`house-body ${h.yours ? "yours" : "neighbour"}`} style={{ height: h.height }}>
-              <div className="house-ext-tag" style={h.yours ? { color: "var(--blue)", borderColor: "var(--blue)" } : undefined}>{h.ext}</div>
-              <div className="house-base" style={h.yours ? { background: "var(--blue)", opacity: 0.3 } : undefined} />
-            </div>
-            <span className={`house-label ${h.yours ? "yours-label" : ""}`}>{h.label}</span>
-          </div>
-        ))}
-      </div>
-      <div className="neighbour-stats">
-        {stats.map((s, i) => (
-          <div key={i} className={`n-stat ${inView ? "visible" : ""}`} style={{ transitionDelay: inView ? `${s.delay + 1000}ms` : "0s" }}>
-            <div className="n-stat-value" style={s.color ? { color: s.color } : undefined}>{s.value}</div>
-            <div className="n-stat-label">{s.label}</div>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -416,6 +328,20 @@ export default function Home() {
         </div>
       </section>
 
+      {/* HERO PRODUCT SCENE */}
+      <div style={{ background: "var(--navy-deep)", padding: "0 2rem 5rem", textAlign: "center" }}>
+        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+          <img
+            src="/brand/hero-product-scene.png"
+            alt="Can I Extend — your extension report on screen"
+            width={1400}
+            height={900}
+            loading="eager"
+            style={{ width: "100%", borderRadius: "12px", boxShadow: "0 32px 80px rgba(0,0,0,0.4)" }}
+          />
+        </div>
+      </div>
+
       {/* STATEMENT */}
       <div className="statement">
         <div className="statement-number">10</div>
@@ -437,7 +363,12 @@ export default function Home() {
           </a>
         </div>
         <div className="feature-demo">
-          <PlanningDemo />
+          <img
+            src="/brand/feature-planning-v2.png"
+            alt="Planning permitted development check result — 4 of 5 rules passed"
+            loading="lazy"
+            style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
+          />
         </div>
       </section>
 
@@ -458,13 +389,40 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURE 03: Neighbour Comparison */}
+      {/* FEATURE 03: AI Design */}
+      <section className="feature dark" id="feat-ai-design">
+        <div className="feature-copy">
+          <div className="feature-index reveal">03 / AI Design</div>
+          <h2 className="feature-headline reveal reveal-delay-1">Your extension, designed by AI</h2>
+          <p className="feature-body reveal reveal-delay-2">
+            Our AI analyses your floor plan and proposes the optimal extension layout — maximising usable space while staying within permitted development limits. Full architectural drawings included in every report.
+          </p>
+          <a href="#" className="feature-link reveal reveal-delay-3">
+            See a sample design <ArrowIcon />
+          </a>
+        </div>
+        <div className="feature-demo">
+          <img
+            src="/brand/feature-ai-design-v2.png"
+            alt="AI-generated floor plan with extension zone highlighted in Blueprint Blue"
+            loading="lazy"
+            style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
+          />
+        </div>
+      </section>
+
+      {/* FEATURE 04: Neighbour Comparison */}
       <section className="feature dark" id="feat-neighbour">
         <div className="feature-demo" style={{ background: "var(--stone)" }}>
-          <NeighbourDemo />
+          <img
+            src="/brand/feature-neighbour-v2.png"
+            alt="Victorian terraced street showing neighbours' extensions with Blueprint Blue overlay"
+            loading="lazy"
+            style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
+          />
         </div>
         <div className="feature-copy" style={{ background: "var(--navy-deep)" }}>
-          <div className="feature-index reveal">03 / Neighbour Comparison</div>
+          <div className="feature-index reveal">04 / Neighbour Comparison</div>
           <h2 className="feature-headline reveal reveal-delay-1">See what your street has already built</h2>
           <p className="feature-body reveal reveal-delay-2">
             We pull planning application data for every house within 100m. You see what your neighbours approved, what they built, and what that means for your application.
@@ -508,6 +466,83 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {/* TESTIMONIALS */}
+      <section style={{ background: "#F5F4F1", padding: "6rem 2rem" }}>
+        <h2 className="reveal" style={{ fontFamily: "var(--font-display)", color: "#0F2240", fontSize: "clamp(32px, 3.5vw, 48px)", textAlign: "center", marginBottom: "3.5rem", letterSpacing: "-0.02em" }}>
+          What homeowners say
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem", maxWidth: "1000px", margin: "0 auto" }}>
+          {/* Card 1 */}
+          <div className="reveal" style={{ background: "#fff", borderRadius: "12px", padding: "2rem", boxShadow: "0 2px 16px rgba(15,34,64,0.08)" }}>
+            <div style={{ width: "56px", height: "56px", borderRadius: "50%", overflow: "hidden", marginBottom: "1.25rem" }}>
+              <img
+                src="/brand/testimonial-avatars-v2.png"
+                alt="Sarah T."
+                loading="lazy"
+                style={{ width: "168px", height: "56px", objectFit: "cover", objectPosition: "15% center", display: "block" }}
+              />
+            </div>
+            <p style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", color: "#0F2240", marginBottom: "1rem", lineHeight: 1.5 }}>
+              &ldquo;We found out in 4 minutes our rear extension would get planning. Saved us &pound;3,000 on a consultant.&rdquo;
+            </p>
+            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.875rem", color: "rgba(15,34,64,0.6)" }}>Sarah T. &mdash; Hackney</span>
+          </div>
+          {/* Card 2 */}
+          <div className="reveal reveal-delay-1" style={{ background: "#fff", borderRadius: "12px", padding: "2rem", boxShadow: "0 2px 16px rgba(15,34,64,0.08)" }}>
+            <div style={{ width: "56px", height: "56px", borderRadius: "50%", overflow: "hidden", marginBottom: "1.25rem" }}>
+              <img
+                src="/brand/testimonial-avatars-v2.png"
+                alt="James M."
+                loading="lazy"
+                style={{ width: "168px", height: "56px", objectFit: "cover", objectPosition: "50% center", display: "block" }}
+              />
+            </div>
+            <p style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", color: "#0F2240", marginBottom: "1rem", lineHeight: 1.5 }}>
+              &ldquo;The cost estimate was within 8% of our final build quote. Genuinely useful.&rdquo;
+            </p>
+            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.875rem", color: "rgba(15,34,64,0.6)" }}>James M. &mdash; Bristol</span>
+          </div>
+          {/* Card 3 */}
+          <div className="reveal reveal-delay-2" style={{ background: "#fff", borderRadius: "12px", padding: "2rem", boxShadow: "0 2px 16px rgba(15,34,64,0.08)" }}>
+            <div style={{ width: "56px", height: "56px", borderRadius: "50%", overflow: "hidden", marginBottom: "1.25rem" }}>
+              <img
+                src="/brand/testimonial-avatars-v2.png"
+                alt="Priya and Ravi K."
+                loading="lazy"
+                style={{ width: "168px", height: "56px", objectFit: "cover", objectPosition: "85% center", display: "block" }}
+              />
+            </div>
+            <p style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", color: "#0F2240", marginBottom: "1rem", lineHeight: 1.5 }}>
+              &ldquo;I uploaded a floor plan photo on my phone and had a full report in under 10 minutes.&rdquo;
+            </p>
+            <span style={{ fontFamily: "var(--font-sans)", fontSize: "0.875rem", color: "rgba(15,34,64,0.6)" }}>Priya &amp; Ravi K. &mdash; Leeds</span>
+          </div>
+        </div>
+      </section>
+
+      {/* SEE YOUR RESULT */}
+      <section style={{ background: "#0F2240", padding: "6rem 2rem", textAlign: "center" }}>
+        <h2 className="reveal" style={{ fontFamily: "var(--font-display)", color: "#F5F4F1", fontSize: "clamp(36px, 4vw, 56px)", marginBottom: "1rem", letterSpacing: "-0.025em" }}>
+          This is what you will see
+        </h2>
+        <p className="reveal reveal-delay-1" style={{ fontFamily: "var(--font-body)", color: "rgba(245,244,241,0.7)", maxWidth: "560px", margin: "0 auto 3rem", fontSize: "1.1rem", lineHeight: 1.6 }}>
+          Your extension report — detailed, professional, ready to share with architects and planners.
+        </p>
+        <div className="reveal reveal-delay-2" style={{ maxWidth: "900px", margin: "0 auto 3rem" }}>
+          <img
+            src="/brand/extension-render.png"
+            alt="Before and after: UK terraced house with rear kitchen extension added"
+            loading="lazy"
+            style={{ width: "100%", borderRadius: "8px" }}
+          />
+        </div>
+        <div className="reveal reveal-delay-3">
+          <a href="/proposals" className="btn-gold" style={{ fontSize: "1.1rem", padding: "1rem 2.5rem" }}>
+            Get your free report
+          </a>
+        </div>
+      </section>
 
       {/* FINAL CTA */}
       <section className="final-cta">
