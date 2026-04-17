@@ -1,243 +1,403 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
-/* ─── Scroll-reveal hook ─────────────────────────────────────────── */
+/* ── Hooks ─────────────────────────────────────────────────────────── */
 function useReveal() {
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>(".reveal");
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("visible")),
-      { threshold: 0.12 }
+      { threshold: 0.1 }
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
   }, []);
 }
 
-/* ─── Sticky nav scroll effect ───────────────────────────────────── */
 function useNavScroll() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
+    const h = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", h, { passive: true });
+    return () => window.removeEventListener("scroll", h);
   }, []);
   return scrolled;
 }
 
-/* ─── Nav ────────────────────────────────────────────────────────── */
-function Nav({ scrolled }: { scrolled: boolean }) {
+/* ── Logo ───────────────────────────────────────────────────────────── */
+function Logo({ dark = false, className = "" }: { dark?: boolean; className?: string }) {
+  const stroke = dark ? "#FFFFFF" : "#0F2240";
+  const accent = dark ? "#7BAFD4" : "#4A7FA5";
+  const fill = dark ? "#FFFFFF" : "#0F2240";
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-white/95 backdrop-blur-sm nav-scrolled" : "bg-transparent"
-      }`}
-      aria-label="Main navigation"
+    <svg
+      viewBox="60 40 210 150"
+      className={`h-10 w-auto ${className}`}
+      aria-label="caniextend"
+      role="img"
+      focusable="false"
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-2 font-bold text-lg text-[var(--fg)]" aria-label="Can I Extend — home">
-          <span className="w-8 h-8 rounded-lg bg-[var(--brand)] flex items-center justify-center text-white text-sm font-black">CI</span>
-          <span>Can I Extend</span>
-        </a>
-        <div className="hidden sm:flex items-center gap-6 text-sm text-[var(--fg-muted)]">
-          <a href="#how-it-works" className="hover:text-[var(--fg)] transition-colors">How it works</a>
-          <a href="#what-you-get" className="hover:text-[var(--fg)] transition-colors">What you get</a>
-          <a href="#for-who" className="hover:text-[var(--fg)] transition-colors">Who is it for</a>
-        </div>
-        <a
-          href="#waitlist"
-          className="inline-flex items-center gap-1.5 bg-[var(--brand)] text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-[var(--brand-dark)] transition-colors"
-        >
-          Join the waitlist
-        </a>
-      </div>
-    </nav>
-  );
-}
-
-/* ─── Section 1: Hero ────────────────────────────────────────────── */
-function HeroSection() {
-  return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center bg-white pt-20 pb-16 px-4 overflow-hidden">
-      {/* Soft gradient background blobs */}
-      <div
-        aria-hidden="true"
-        className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full opacity-10 pointer-events-none"
-        style={{ background: "radial-gradient(circle, #2E61FF, transparent 70%)" }}
-      />
-      <div
-        aria-hidden="true"
-        className="absolute -bottom-24 -left-24 w-[400px] h-[400px] rounded-full opacity-8 pointer-events-none"
-        style={{ background: "radial-gradient(circle, #7C3AED, transparent 70%)" }}
-      />
-
-      <div className="relative max-w-4xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 bg-[var(--brand-light)] text-[var(--brand)] text-xs font-semibold px-3 py-1.5 rounded-full mb-6 animate-fade-up">
-          <span className="w-1.5 h-1.5 rounded-full bg-[var(--brand)] animate-pulse" />
-          Now accepting waitlist signups
-        </div>
-
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-[var(--fg)] leading-tight mb-6 animate-fade-up animate-fade-up-delay-1">
-          Can I extend <br className="hidden sm:block" />
-          <span className="text-gradient">my home?</span>
-        </h1>
-
-        <p className="text-lg sm:text-xl text-[var(--fg-muted)] max-w-2xl mx-auto mb-8 leading-relaxed animate-fade-up animate-fade-up-delay-2">
-          Most homeowners don&apos;t know their home has more potential than they think.
-          Find out in minutes — get a professionally designed extension with costs and
-          planning compliance, powered by AI.
-        </p>
-
-        <div className="flex flex-col sm:flex-row gap-3 justify-center animate-fade-up animate-fade-up-delay-3">
-          <a
-            href="#samples"
-            className="inline-flex items-center justify-center gap-2 bg-[var(--brand)] text-white font-semibold px-6 py-3.5 rounded-xl text-base hover:bg-[var(--brand-dark)] transition-colors shadow-lg shadow-blue-500/20"
-          >
-            See what&apos;s possible
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </a>
-          <a
-            href="#waitlist"
-            className="inline-flex items-center justify-center gap-2 border border-[var(--border)] text-[var(--fg)] font-semibold px-6 py-3.5 rounded-xl text-base hover:border-[var(--brand)] hover:text-[var(--brand)] transition-colors"
-          >
-            Join the waitlist
-          </a>
-        </div>
-
-        {/* Before/after floorplan visual */}
-        <div className="mt-14 relative mx-auto max-w-3xl animate-fade-up animate-fade-up-delay-4">
-          <div className="rounded-2xl border border-[var(--border)] shadow-2xl shadow-black/8 overflow-hidden bg-[var(--bg-muted)]">
-            <div className="grid grid-cols-2 divide-x divide-[var(--border)]">
-              <div className="p-6 sm:p-8">
-                <div className="text-xs font-semibold text-[var(--fg-muted)] uppercase tracking-wider mb-3">Before</div>
-                {/* Placeholder floorplan SVG */}
-                <div className="aspect-[4/3] bg-white rounded-lg border border-[var(--border)] flex items-center justify-center">
-                  <FloorplanPlaceholder type="before" />
-                </div>
-              </div>
-              <div className="p-6 sm:p-8 bg-[var(--brand-light)]/40">
-                <div className="text-xs font-semibold text-[var(--brand)] uppercase tracking-wider mb-3">After — AI Extension</div>
-                <div className="aspect-[4/3] bg-white rounded-lg border border-[var(--border)] flex items-center justify-center">
-                  <FloorplanPlaceholder type="after" />
-                </div>
-              </div>
-            </div>
-            <div className="px-6 py-3 border-t border-[var(--border)] bg-white text-xs text-[var(--fg-muted)] text-center">
-              Example: 3-bed semi-detached in South London — 4.5m rear extension, £68,000 estimated cost
-            </div>
-          </div>
-        </div>
-
-        {/* Social proof bar */}
-        <div className="mt-8 flex flex-wrap justify-center gap-5 text-sm text-[var(--fg-muted)] animate-fade-up">
-          {[
-            { icon: "🇬🇧", label: "UK homes only" },
-            { icon: "⚡", label: "Results in minutes" },
-            { icon: "📋", label: "Based on GPDO 2015" },
-            { icon: "🔒", label: "GDPR compliant" },
-          ].map(({ icon, label }) => (
-            <span key={label} className="flex items-center gap-1.5">
-              <span aria-hidden="true">{icon}</span> {label}
-            </span>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* Floorplan placeholder SVG */
-function FloorplanPlaceholder({ type }: { type: "before" | "after" }) {
-  const isAfter = type === "after";
-  return (
-    <svg viewBox="0 0 160 120" className="w-full max-w-[200px] opacity-70" aria-hidden="true">
-      {/* House outline */}
-      <rect x="20" y="30" width="80" height="70" fill="none" stroke={isAfter ? "#2E61FF" : "#9CA3AF"} strokeWidth="1.5" />
-      {/* Rooms */}
-      <rect x="20" y="30" width="40" height="35" fill={isAfter ? "#EEF3FF" : "#F3F4F6"} stroke={isAfter ? "#2E61FF" : "#9CA3AF"} strokeWidth="1" />
-      <rect x="60" y="30" width="40" height="35" fill={isAfter ? "#EEF3FF" : "#F3F4F6"} stroke={isAfter ? "#2E61FF" : "#9CA3AF"} strokeWidth="1" />
-      <rect x="20" y="65" width="80" height="35" fill={isAfter ? "#EEF3FF" : "#F3F4F6"} stroke={isAfter ? "#2E61FF" : "#9CA3AF"} strokeWidth="1" />
-      {/* Extension */}
-      {isAfter && (
-        <>
-          <rect x="100" y="40" width="40" height="55" fill="#DBEAFE" stroke="#2E61FF" strokeWidth="1.5" strokeDasharray="4 2" />
-          <text x="112" y="70" fontSize="7" fill="#2E61FF" fontWeight="600">New</text>
-        </>
-      )}
-      {/* Labels */}
-      <text x="35" y="52" fontSize="5" fill={isAfter ? "#2E61FF" : "#6B7280"} textAnchor="middle">Kitchen</text>
-      <text x="75" y="52" fontSize="5" fill={isAfter ? "#2E61FF" : "#6B7280"} textAnchor="middle">Living</text>
-      <text x="55" y="85" fontSize="5" fill={isAfter ? "#2E61FF" : "#6B7280"} textAnchor="middle">Bedroom</text>
+      <rect x="80" y="90" width="90" height="65" fill="none" stroke={stroke} strokeWidth="2.5" />
+      <polygon points="72,90 125,52 178,90" fill="none" stroke={stroke} strokeWidth="2.5" strokeLinejoin="round" />
+      <rect x="170" y="108" width="50" height="47" fill="none" stroke={accent} strokeWidth="2" />
+      <line x1="170" y1="108" x2="220" y2="108" stroke={accent} strokeWidth="2" />
+      <rect x="109" y="118" width="18" height="37" fill="none" stroke={stroke} strokeWidth="1.5" />
+      <rect x="143" y="102" width="18" height="18" fill="none" stroke={stroke} strokeWidth="1.5" />
+      <rect x="180" y="118" width="22" height="18" fill="none" stroke={accent} strokeWidth="1.5" />
+      <text
+        x="160"
+        y="178"
+        fontFamily="'DM Sans', system-ui, sans-serif"
+        fontSize="20"
+        fontWeight="500"
+        letterSpacing="0.5"
+        fill={fill}
+        textAnchor="middle"
+      >
+        caniextend
+      </text>
     </svg>
   );
 }
 
-/* ─── Section 2: How it works ────────────────────────────────────── */
-function HowItWorksSection() {
-  const steps = [
+/* ── Nav ────────────────────────────────────────────────────────────── */
+function Nav({ scrolled }: { scrolled: boolean }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? "bg-white/97 backdrop-blur-sm nav-scrolled" : "bg-transparent"
+        }`}
+        style={{ height: "64px" }}
+        aria-label="Main navigation"
+      >
+        <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
+          <a href="/" aria-label="caniextend — home">
+            <Logo dark={!scrolled} />
+          </a>
+
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-8">
+            {[
+              { href: "#how-it-works", label: "How it works" },
+              { href: "#waitlist", label: "Pricing" },
+            ].map(({ href, label }) => (
+              <a
+                key={href}
+                href={href}
+                className={`text-[15px] font-medium transition-colors duration-200 ${
+                  scrolled
+                    ? "text-[#2D3748] hover:text-[#0F2240]"
+                    : "text-white/80 hover:text-white"
+                }`}
+              >
+                {label}
+              </a>
+            ))}
+            <a
+              href="#waitlist"
+              className={`text-[15px] font-semibold px-5 py-2.5 rounded-[4px] transition-colors duration-200 ${
+                scrolled
+                  ? "bg-[#0F2240] text-white hover:bg-[#1a3a60]"
+                  : "bg-white text-[#0F2240] hover:bg-white/90"
+              }`}
+            >
+              Get Started
+            </a>
+          </div>
+
+          {/* Mobile hamburger */}
+          <button
+            onClick={() => setOpen(!open)}
+            className={`md:hidden p-2 rounded-md ${scrolled ? "text-[#0F2240]" : "text-white"}`}
+            aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+          >
+            {open ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                <path d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        </div>
+      </nav>
+
+      {/* Mobile menu overlay */}
+      {open && (
+        <div
+          id="mobile-menu"
+          className="fixed inset-0 z-40 bg-[#0F2240] flex flex-col pt-20 px-6 md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation menu"
+        >
+          <ul className="space-y-1">
+            {[
+              { href: "#how-it-works", label: "How it works" },
+              { href: "#waitlist", label: "Pricing" },
+            ].map(({ href, label }) => (
+              <li key={href}>
+                <a
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className="block py-4 text-xl font-medium text-white/80 hover:text-white border-b border-white/10 transition-colors"
+                >
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <a
+            href="#waitlist"
+            onClick={() => setOpen(false)}
+            className="mt-8 block w-full bg-white text-[#0F2240] text-center font-semibold py-4 rounded-[4px] text-lg"
+          >
+            Get Started
+          </a>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ── Hero ───────────────────────────────────────────────────────────── */
+function Hero() {
+  return (
+    <section
+      className="hero-bg relative min-h-[80vh] flex items-center justify-center overflow-hidden"
+      aria-labelledby="hero-heading"
+    >
+      {/* Radial glow overlay */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 80% 60% at 50% 40%, rgba(74,127,165,0.20) 0%, transparent 70%)",
+        }}
+      />
+
+      <div className="relative max-w-4xl mx-auto px-6 text-center py-28 pt-36">
+        <p className="animate-fade-up text-[#7BAFD4] text-sm font-medium uppercase tracking-[0.1em] mb-6">
+          AI-powered extension planning for UK homeowners
+        </p>
+
+        <h1
+          id="hero-heading"
+          className="animate-fade-up animate-fade-up-1 text-white mb-6"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "clamp(34px, 6vw, 52px)",
+            lineHeight: "1.1",
+          }}
+        >
+          Could your home fit<br className="hidden sm:block" /> an extension?
+        </h1>
+
+        <p
+          className="animate-fade-up animate-fade-up-2 text-white/70 max-w-xl mx-auto leading-relaxed mb-10"
+          style={{ fontSize: "clamp(16px, 2.5vw, 18px)" }}
+        >
+          Upload your floorplan. Get a professional extension proposal, cost
+          estimate, and planning guidance — in minutes.
+        </p>
+
+        <div className="animate-fade-up animate-fade-up-3 flex flex-col sm:flex-row gap-3 justify-center">
+          <a
+            href="#waitlist"
+            className="inline-flex items-center justify-center gap-2 bg-[#4A7FA5] text-white font-semibold px-8 py-4 rounded-[4px] hover:bg-[#3d6e91] transition-colors text-base"
+            style={{ minHeight: "56px" }}
+          >
+            Upload your floorplan
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+        </div>
+
+        <p className="animate-fade-up mt-8 text-white/45 text-sm">
+          Early access: 50 homeowners + 10 estate agents
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ── Trust strip ────────────────────────────────────────────────────── */
+function TrustStrip() {
+  const items = [
     {
-      number: "01",
+      label: "RIBA-aligned guidance",
       icon: (
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#2E61FF" strokeWidth={1.8} aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A7FA5" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M3 21h18M5 21V8l7-5 7 5v13" />
+          <path d="M10 21v-5h4v5" />
         </svg>
       ),
-      title: "Upload your floorplan",
-      body: "Take a photo of your property's floorplan — estate agent brochure, architect drawing, or even a hand sketch. We accept any format.",
     },
     {
-      number: "02",
+      label: "UK planning regulations checked",
       icon: (
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#2E61FF" strokeWidth={1.8} aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A7FA5" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="M9 12l2 2 4-4" />
         </svg>
       ),
-      title: "Our AI analyses your property",
-      body: "We cross-reference your floorplan with UK planning rules, your property boundaries, and local authority records to identify your extension options.",
     },
     {
-      number: "03",
+      label: "Results in under 5 minutes",
       icon: (
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#2E61FF" strokeWidth={1.8} aria-hidden="true">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A7FA5" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 3" />
         </svg>
       ),
-      title: "Get your extension proposal",
-      body: "In minutes you receive a complete extension design, cost estimate, planning compliance check, and comparison with similar properties nearby.",
     },
   ];
 
   return (
-    <section id="how-it-works" className="py-20 sm:py-28 px-4 bg-[var(--bg-muted)]">
+    <div className="bg-[#F5F4F1] py-6 px-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-14">
+          {items.map((item) => (
+            <div key={item.label} className="flex items-center gap-3">
+              {item.icon}
+              <span className="text-[14px] font-semibold text-[#0F2240]">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── How it works ───────────────────────────────────────────────────── */
+function HowItWorks() {
+  const steps = [
+    {
+      number: "01",
+      title: "Upload your floorplan",
+      body: "Take a photo of your property's floorplan — estate agent brochure, architect drawing, or a hand sketch. We accept PDF, JPG, and PNG.",
+      visual: (
+        <div className="w-full max-w-xs aspect-square rounded-[8px] bg-[#F5F4F1] flex items-center justify-center border border-[#E2E8F0]">
+          <svg viewBox="0 0 120 120" className="w-2/3" aria-hidden="true">
+            <rect x="10" y="10" width="100" height="100" rx="3" fill="none" stroke="#0F2240" strokeWidth="1.5" />
+            <rect x="22" y="22" width="32" height="28" fill="none" stroke="#4A7FA5" strokeWidth="1.5" />
+            <rect x="62" y="22" width="36" height="28" fill="none" stroke="#4A7FA5" strokeWidth="1.5" />
+            <rect x="22" y="58" width="76" height="36" fill="none" stroke="#4A7FA5" strokeWidth="1.5" />
+            <text x="38" y="40" fontSize="7" fill="#4A7FA5" textAnchor="middle" fontFamily="sans-serif">Bed</text>
+            <text x="80" y="40" fontSize="7" fill="#4A7FA5" textAnchor="middle" fontFamily="sans-serif">Bath</text>
+            <text x="60" y="80" fontSize="7" fill="#4A7FA5" textAnchor="middle" fontFamily="sans-serif">Living Room</text>
+          </svg>
+        </div>
+      ),
+    },
+    {
+      number: "02",
+      title: "Our AI analyses your property",
+      body: "We cross-reference your floorplan with UK planning rules, your property boundaries, and local authority records to identify your extension options.",
+      visual: (
+        <div className="w-full max-w-xs aspect-square rounded-[8px] bg-[#0F2240] flex items-center justify-center overflow-hidden">
+          <svg viewBox="0 0 120 120" className="w-full h-full" aria-hidden="true">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <line key={`h${i}`} x1="0" y1={24 * (i + 1)} x2="120" y2={24 * (i + 1)} stroke="rgba(74,127,165,0.18)" strokeWidth="0.75" />
+            ))}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <line key={`v${i}`} x1={24 * (i + 1)} y1="0" x2={24 * (i + 1)} y2="120" stroke="rgba(74,127,165,0.18)" strokeWidth="0.75" />
+            ))}
+            <rect x="22" y="42" width="54" height="52" fill="none" stroke="#4A7FA5" strokeWidth="1.5" />
+            <polygon points="16,42 49,20 82,42" fill="none" stroke="#4A7FA5" strokeWidth="1.5" strokeLinejoin="round" />
+            <rect x="76" y="54" width="28" height="40" fill="rgba(74,127,165,0.15)" stroke="#7BAFD4" strokeWidth="1.5" strokeDasharray="3 2" />
+            <circle cx="49" cy="42" r="3" fill="#4A7FA5" />
+            <circle cx="76" cy="54" r="3" fill="#7BAFD4" />
+            <line x1="49" y1="42" x2="76" y2="54" stroke="#4A7FA5" strokeWidth="1" strokeDasharray="3 2" />
+            <text x="90" y="50" fontSize="6" fill="#7BAFD4" textAnchor="middle" fontFamily="sans-serif">New</text>
+          </svg>
+        </div>
+      ),
+    },
+    {
+      number: "03",
+      title: "Get your extension proposal",
+      body: "In minutes you receive a complete extension design, cost estimate, planning compliance check, and comparison with similar properties nearby.",
+      visual: (
+        <div className="w-full max-w-xs aspect-square rounded-[8px] bg-[#F5F4F1] border border-[#E2E8F0] flex flex-col overflow-hidden">
+          <div className="bg-[#0F2240] px-4 py-3 flex-shrink-0">
+            <div className="text-white text-xs font-semibold">Extension Proposal</div>
+            <div className="text-white/55 text-[10px] mt-0.5">24 Clarence St, SE15</div>
+          </div>
+          <div className="flex-1 p-5 space-y-4">
+            {[
+              { label: "Estimated cost", value: "£62k–£74k" },
+              { label: "Planning route", value: "Permitted Dev." },
+              { label: "Build time", value: "10–14 weeks" },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex justify-between items-baseline text-xs">
+                <span className="text-[#2D3748]/60">{label}</span>
+                <span className="font-semibold text-[#0F2240]">{value}</span>
+              </div>
+            ))}
+            <div className="pt-1 border-t border-[#E2E8F0]">
+              <span className="inline-flex items-center gap-1 bg-[#F0FAF6] text-[#1A7F5A] text-[10px] font-semibold px-2 py-1 rounded-[4px]">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                  <path d="M5 12l5 5L20 7" />
+                </svg>
+                Permitted Development
+              </span>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <section id="how-it-works" className="py-[80px] bg-white px-6" aria-labelledby="how-it-works-heading">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-14 reveal">
-          <p className="text-xs font-semibold text-[var(--brand)] uppercase tracking-wider mb-3">Simple process</p>
-          <h2 className="text-3xl sm:text-4xl font-black text-[var(--fg)] tracking-tight">
-            How it works
+        <div className="text-center mb-16 reveal">
+          <h2
+            id="how-it-works-heading"
+            className="font-semibold text-[#0F2240] leading-tight mb-4"
+            style={{ fontSize: "clamp(26px, 4vw, 32px)" }}
+          >
+            From floor plan to proposal in minutes
           </h2>
-          <p className="mt-4 text-[var(--fg-muted)] max-w-xl mx-auto">
-            From floorplan to proposal in three steps. No architect needed, no waiting weeks.
+          <p className="text-[#2D3748] max-w-xl mx-auto leading-relaxed">
+            No architect needed. No waiting weeks. Upload your floorplan and get a complete proposal in under five minutes.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="space-y-20">
           {steps.map((step, i) => (
             <div
               key={step.number}
-              className="reveal bg-white rounded-2xl border border-[var(--border)] p-7 relative"
-              style={{ transitionDelay: `${i * 0.1}s` }}
+              className={`reveal flex flex-col lg:flex-row items-center gap-10 lg:gap-16 ${
+                i % 2 === 1 ? "lg:flex-row-reverse" : ""
+              }`}
+              style={{ transitionDelay: `${i * 0.12}s` }}
             >
-              <div className="w-10 h-10 rounded-xl bg-[var(--brand-light)] flex items-center justify-center mb-4">
-                {step.icon}
+              <div className="w-full lg:w-1/2 flex justify-center">
+                {step.visual}
               </div>
-              <div className="absolute top-5 right-5 text-5xl font-black text-[var(--border)] select-none">
-                {step.number}
+              <div className="w-full lg:w-1/2">
+                <div
+                  className="text-[56px] font-bold leading-none mb-4 select-none"
+                  style={{ color: "#E2E8F0" }}
+                  aria-hidden="true"
+                >
+                  {step.number}
+                </div>
+                <h3 className="text-[20px] font-semibold text-[#0F2240] mb-3">{step.title}</h3>
+                <p className="text-[#2D3748] leading-relaxed">{step.body}</p>
               </div>
-              <h3 className="text-base font-bold text-[var(--fg)] mb-2">{step.title}</h3>
-              <p className="text-sm text-[var(--fg-muted)] leading-relaxed">{step.body}</p>
             </div>
           ))}
         </div>
@@ -246,40 +406,119 @@ function HowItWorksSection() {
   );
 }
 
-/* ─── Section 3: What you get ────────────────────────────────────── */
-function WhatYouGetSection() {
-  const items = [
+/* ── Testimonials ───────────────────────────────────────────────────── */
+function Testimonials() {
+  const quotes = [
     {
-      icon: "📐",
-      title: "Extension design",
-      body: "A scaled architectural drawing of your proposed extension, showing the new layout alongside your existing floorplan.",
+      body: "We'd been putting off the extension conversation for years. caniextend gave us a clear answer in ten minutes — and the cost estimate was remarkably accurate.",
+      name: "Sarah M.",
+      location: "Hackney, London",
     },
     {
-      icon: "✅",
-      title: "Planning compliance check",
-      body: "We check your extension against Permitted Development rights and local planning rules — so you know before you build.",
+      body: "Used it before making an offer on a property. Checked extension potential without paying for a surveyor. Saved me from a costly mistake.",
+      name: "James K.",
+      location: "Clifton, Bristol",
     },
     {
-      icon: "💷",
-      title: "Cost estimate",
-      body: "A realistic cost breakdown for your extension based on current UK build rates, your location, and extension type.",
-    },
-    {
-      icon: "🏘️",
-      title: "Neighbour comparison",
-      body: "See what similar extensions nearby have been approved for, with actual costs and planning outcomes.",
+      body: "The planning compliance check was worth it alone. Knowing our rear extension fell under Permitted Development gave us real confidence to proceed.",
+      name: "Priya T.",
+      location: "Didsbury, Manchester",
     },
   ];
 
   return (
-    <section id="what-you-get" className="py-20 sm:py-28 px-4 bg-white">
+    <section className="py-[80px] bg-[#F5F4F1] px-6" aria-label="Customer testimonials">
       <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-14 reveal">
-          <p className="text-xs font-semibold text-[var(--brand)] uppercase tracking-wider mb-3">Your proposal includes</p>
-          <h2 className="text-3xl sm:text-4xl font-black text-[var(--fg)] tracking-tight">
-            Everything you need to decide
+        <div className="text-center mb-12 reveal">
+          <h2 className="font-semibold text-[#0F2240]" style={{ fontSize: "clamp(26px, 4vw, 32px)" }}>
+            What homeowners say
           </h2>
-          <p className="mt-4 text-[var(--fg-muted)] max-w-xl mx-auto">
+        </div>
+
+        {/* Horizontal scroll on mobile, 3-col grid on desktop */}
+        <div className="testimonial-track flex gap-5 overflow-x-auto pb-2 snap-x snap-mandatory lg:grid lg:grid-cols-3 lg:overflow-visible lg:pb-0">
+          {quotes.map((q, i) => (
+            <article
+              key={q.name}
+              className="reveal flex-shrink-0 w-[80vw] sm:w-[60vw] lg:w-auto snap-start bg-white rounded-[8px] p-6"
+              style={{ transitionDelay: `${i * 0.1}s` }}
+            >
+              <div
+                className="text-[52px] leading-none text-[#4A7FA5] mb-1 select-none"
+                style={{ fontFamily: "var(--font-display)" }}
+                aria-hidden="true"
+              >
+                &ldquo;
+              </div>
+              <p className="text-[16px] italic text-[#2D3748] leading-relaxed mb-5">{q.body}</p>
+              <footer>
+                <div className="font-semibold text-[#0F2240] text-[14px]">{q.name}</div>
+                <div className="text-[#2D3748]/55 text-[13px]">{q.location}</div>
+              </footer>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ── Features ───────────────────────────────────────────────────────── */
+function Features() {
+  const items = [
+    {
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A7FA5" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <path d="M3 9h18M9 21V9" />
+        </svg>
+      ),
+      title: "Extension design",
+      body: "A scaled architectural drawing of your proposed extension, showing the new layout alongside your existing floorplan.",
+    },
+    {
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A7FA5" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="M9 12l2 2 4-4" />
+        </svg>
+      ),
+      title: "Planning compliance check",
+      body: "We check your extension against Permitted Development rights and local planning rules — so you know before you build.",
+    },
+    {
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A7FA5" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+        </svg>
+      ),
+      title: "Cost estimate",
+      body: "A realistic cost breakdown based on current UK build rates, your location, and extension type — updated quarterly from RICS data.",
+    },
+    {
+      icon: (
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4A7FA5" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+          <polyline points="9,22 9,12 15,12 15,22" />
+        </svg>
+      ),
+      title: "Neighbour comparison",
+      body: "See what similar extensions nearby have been approved for, with actual costs and planning outcomes from Land Registry.",
+    },
+  ];
+
+  return (
+    <section id="features" className="py-[80px] bg-white px-6" aria-labelledby="features-heading">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-12 reveal">
+          <h2
+            id="features-heading"
+            className="font-semibold text-[#0F2240] leading-tight mb-4"
+            style={{ fontSize: "clamp(26px, 4vw, 32px)" }}
+          >
+            Everything you need to plan your extension
+          </h2>
+          <p className="text-[#2D3748] max-w-xl mx-auto leading-relaxed">
             No more paying thousands for a feasibility study. Get the same quality insight in minutes.
           </p>
         </div>
@@ -288,13 +527,15 @@ function WhatYouGetSection() {
           {items.map((item, i) => (
             <div
               key={item.title}
-              className="reveal flex gap-5 p-6 rounded-2xl border border-[var(--border)] hover:border-[var(--brand)] hover:shadow-lg hover:shadow-blue-50 transition-all"
+              className="reveal flex gap-5 p-6 rounded-[8px] border border-[#E2E8F0] hover:border-[#4A7FA5] hover:shadow-[0_6px_16px_rgba(15,34,64,0.08)] transition-all duration-200"
               style={{ transitionDelay: `${i * 0.08}s` }}
             >
-              <div className="text-3xl flex-shrink-0 mt-0.5" aria-hidden="true">{item.icon}</div>
+              <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-[4px] bg-[#F5F4F1]">
+                {item.icon}
+              </div>
               <div>
-                <h3 className="font-bold text-[var(--fg)] mb-1.5">{item.title}</h3>
-                <p className="text-sm text-[var(--fg-muted)] leading-relaxed">{item.body}</p>
+                <h3 className="font-semibold text-[#0F2240] mb-2">{item.title}</h3>
+                <p className="text-sm text-[#2D3748] leading-relaxed">{item.body}</p>
               </div>
             </div>
           ))}
@@ -304,199 +545,37 @@ function WhatYouGetSection() {
   );
 }
 
-/* ─── Section 4: Sample results ──────────────────────────────────── */
-function SampleResultsSection() {
+/* ── Secondary CTA ──────────────────────────────────────────────────── */
+function SecondaryCTA() {
   return (
-    <section id="samples" className="py-20 sm:py-28 px-4 bg-[var(--bg-muted)]">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-14 reveal">
-          <p className="text-xs font-semibold text-[var(--brand)] uppercase tracking-wider mb-3">Real output</p>
-          <h2 className="text-3xl sm:text-4xl font-black text-[var(--fg)] tracking-tight">
-            Sample results
-          </h2>
-          <p className="mt-4 text-[var(--fg-muted)] max-w-xl mx-auto">
-            Here&apos;s what a typical Can I Extend report looks like.
-          </p>
-        </div>
-
-        <div className="reveal bg-white rounded-2xl border border-[var(--border)] shadow-xl overflow-hidden">
-          {/* Mock report header */}
-          <div className="border-b border-[var(--border)] px-6 py-4 flex items-center justify-between bg-[var(--brand-light)]/30">
-            <div>
-              <div className="text-xs text-[var(--fg-muted)] uppercase tracking-wider mb-0.5">Sample Report</div>
-              <div className="font-bold text-[var(--fg)]">24 Clarence Street, SE15 — 3-bed terrace</div>
-            </div>
-            <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-green-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              Permitted Development
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border)]">
-            {/* Floorplan comparison */}
-            <div className="col-span-2 p-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <div className="text-xs font-semibold text-[var(--fg-muted)] uppercase tracking-wider mb-2">Existing</div>
-                  <div className="aspect-[4/3] bg-[var(--bg-muted)] rounded-xl border border-[var(--border)] flex items-center justify-center">
-                    <FloorplanPlaceholder type="before" />
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs font-semibold text-[var(--brand)] uppercase tracking-wider mb-2">With Extension</div>
-                  <div className="aspect-[4/3] bg-[var(--brand-light)]/40 rounded-xl border border-[var(--brand)]/30 flex items-center justify-center">
-                    <FloorplanPlaceholder type="after" />
-                  </div>
-                </div>
-              </div>
-              <p className="text-xs text-[var(--fg-muted)] mt-3">
-                Proposed: 4.5m rear single-storey extension. Adds approx. 28m² to ground floor.
-              </p>
-            </div>
-
-            {/* Stats panel */}
-            <div className="p-6 space-y-5">
-              {[
-                { label: "Est. cost", value: "£62,000–£74,000", sub: "Based on SE London rates" },
-                { label: "Planning route", value: "Permitted Development", sub: "No application required" },
-                { label: "Build time", value: "10–14 weeks", sub: "Typical for this size" },
-                { label: "Value added", value: "+£45,000–£60,000", sub: "Based on local comparables" },
-              ].map(({ label, value, sub }) => (
-                <div key={label}>
-                  <div className="text-xs text-[var(--fg-muted)] mb-0.5">{label}</div>
-                  <div className="font-bold text-[var(--fg)] text-sm">{value}</div>
-                  <div className="text-xs text-[var(--fg-muted)]">{sub}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 text-center">
-          <a
-            href="#waitlist"
-            className="inline-flex items-center gap-2 text-[var(--brand)] font-semibold text-sm hover:underline"
-          >
-            Get your own report — join the waitlist
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </a>
-        </div>
+    <section className="py-[80px] bg-[#F5F4F1] px-6">
+      <div className="max-w-2xl mx-auto text-center reveal">
+        <h2
+          className="font-semibold text-[#0F2240] leading-tight mb-4"
+          style={{ fontSize: "clamp(26px, 4vw, 32px)" }}
+        >
+          Ready to find out what&apos;s possible?
+        </h2>
+        <p className="text-[#2D3748] mb-8 leading-relaxed">
+          No account needed. Free to start.
+        </p>
+        <a
+          href="#waitlist"
+          className="inline-flex items-center justify-center gap-2 bg-[#0F2240] text-white font-semibold px-8 py-4 rounded-[4px] hover:bg-[#1a3a60] transition-colors text-base"
+          style={{ minHeight: "56px" }}
+        >
+          Upload your floorplan
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
+        </a>
       </div>
     </section>
   );
 }
 
-/* ─── Section 5: For who ─────────────────────────────────────────── */
-function ForWhoSection() {
-  const audiences = [
-    {
-      emoji: "🔍",
-      title: "Homeowners curious about their options",
-      body: "You live in a house and wonder — could I get more space? Could I extend into the garden? Is it even allowed? We give you a clear answer.",
-    },
-    {
-      emoji: "🏡",
-      title: "Buyers evaluating potential",
-      body: "Viewing a house and wondering if the kitchen could be bigger? Check extension potential before you make an offer.",
-    },
-    {
-      emoji: "📈",
-      title: "Owners planning their next move",
-      body: "Extend and stay, or sell and move? Understanding your extension options helps you make the right decision for your family.",
-    },
-  ];
-
-  return (
-    <section id="for-who" className="py-20 sm:py-28 px-4 bg-white">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-14 reveal">
-          <p className="text-xs font-semibold text-[var(--brand)] uppercase tracking-wider mb-3">Who is it for</p>
-          <h2 className="text-3xl sm:text-4xl font-black text-[var(--fg)] tracking-tight">
-            Made for UK homeowners
-          </h2>
-          <p className="mt-4 text-[var(--fg-muted)] max-w-xl mx-auto">
-            Whether you&apos;re curious, planning, or buying — Can I Extend gives you the information you need.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-          {audiences.map((a, i) => (
-            <div
-              key={a.title}
-              className="reveal text-center p-8 rounded-2xl bg-[var(--bg-muted)] border border-[var(--border)]"
-              style={{ transitionDelay: `${i * 0.1}s` }}
-            >
-              <div className="text-4xl mb-4" aria-hidden="true">{a.emoji}</div>
-              <h3 className="font-bold text-[var(--fg)] mb-3 text-base">{a.title}</h3>
-              <p className="text-sm text-[var(--fg-muted)] leading-relaxed">{a.body}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Section 6: Trust signals ───────────────────────────────────── */
-function TrustSection() {
-  const signals = [
-    {
-      icon: "📋",
-      title: "UK planning expertise",
-      body: "Built on the General Permitted Development Order 2015 and updated for local planning authority variations across England.",
-    },
-    {
-      icon: "🗺️",
-      title: "Local data",
-      body: "We cross-reference Land Registry data, planning applications, and property sold prices to give you local context.",
-    },
-    {
-      icon: "🏗️",
-      title: "Real build costs",
-      body: "Cost estimates are based on current UK build rates from RICS data, updated quarterly, adjusted for your region.",
-    },
-    {
-      icon: "🔒",
-      title: "Privacy first",
-      body: "Your floorplan and property data is processed securely and never shared. GDPR compliant, hosted in the UK.",
-    },
-  ];
-
-  return (
-    <section className="py-20 sm:py-28 px-4 bg-[var(--brand)] text-white">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-14 reveal">
-          <p className="text-xs font-semibold text-white/60 uppercase tracking-wider mb-3">Why trust us</p>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
-            Built on real data
-          </h2>
-          <p className="mt-4 text-white/70 max-w-xl mx-auto">
-            Not guesswork. Not generic estimates. Can I Extend is built on UK planning law, local authority data, and real build costs.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {signals.map((s, i) => (
-            <div
-              key={s.title}
-              className="reveal bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20"
-              style={{ transitionDelay: `${i * 0.08}s` }}
-            >
-              <div className="text-3xl mb-3" aria-hidden="true">{s.icon}</div>
-              <h3 className="font-bold text-white mb-2 text-sm">{s.title}</h3>
-              <p className="text-xs text-white/70 leading-relaxed">{s.body}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── Section 7: Waitlist signup ─────────────────────────────────── */
-function WaitlistSection() {
+/* ── Waitlist ───────────────────────────────────────────────────────── */
+function Waitlist() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -527,25 +606,41 @@ function WaitlistSection() {
   }
 
   return (
-    <section id="waitlist" className="py-20 sm:py-28 px-4 bg-white">
+    <section id="waitlist" className="py-[80px] bg-white px-6" aria-labelledby="waitlist-heading">
       <div className="max-w-xl mx-auto text-center">
         <div className="reveal">
-          <p className="text-xs font-semibold text-[var(--brand)] uppercase tracking-wider mb-3">Early access</p>
-          <h2 className="text-3xl sm:text-4xl font-black text-[var(--fg)] tracking-tight mb-4">
+          <p className="text-[#4A7FA5] text-sm font-medium uppercase tracking-[0.1em] mb-4">
+            Early access
+          </p>
+          <h2
+            id="waitlist-heading"
+            className="font-semibold text-[#0F2240] leading-tight mb-4"
+            style={{ fontSize: "clamp(26px, 4vw, 32px)" }}
+          >
             Your home has more potential<br className="hidden sm:block" /> than you think
           </h2>
-          <p className="text-[var(--fg-muted)] mb-8 leading-relaxed">
+          <p className="text-[#2D3748] mb-8 leading-relaxed">
             Join the waitlist and be among the first to find out if you can extend.
-            We&apos;ll let you know as soon as early access opens.
           </p>
         </div>
 
         {status === "success" ? (
-          <div className="reveal bg-green-50 border border-green-200 rounded-2xl p-8">
-            <div className="text-4xl mb-3" aria-hidden="true">🎉</div>
-            <h3 className="font-bold text-green-900 text-lg mb-1">You&apos;re on the list!</h3>
-            <p className="text-green-700 text-sm">
-              We&apos;ll be in touch as soon as early access is ready. Keep an eye on your inbox.
+          <div className="reveal bg-[#F0FAF6] border border-[#1A7F5A]/25 rounded-[8px] p-8">
+            <svg
+              className="w-10 h-10 mx-auto mb-3 text-[#1A7F5A]"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="M8 12l3 3 5-5" />
+            </svg>
+            <h3 className="font-semibold text-[#1A7F5A] text-lg mb-1">You&apos;re on the list!</h3>
+            <p className="text-[#1A7F5A]/80 text-sm">
+              We&apos;ll be in touch as soon as early access is ready.
             </p>
           </div>
         ) : (
@@ -556,34 +651,41 @@ function WaitlistSection() {
             aria-label="Waitlist signup form"
           >
             <div className="flex flex-col sm:flex-row gap-3">
-              <label htmlFor="waitlist-email" className="sr-only">Your email address</label>
+              <label htmlFor="waitlist-email" className="sr-only">
+                Your email address
+              </label>
               <input
                 ref={inputRef}
                 id="waitlist-email"
                 type="email"
                 autoComplete="email"
                 value={email}
-                onChange={(e) => { setEmail(e.target.value); setErrorMsg(""); }}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrorMsg("");
+                }}
                 placeholder="your@email.com"
-                className="flex-1 px-4 py-3.5 rounded-xl border border-[var(--border)] text-[var(--fg)] text-base placeholder:text-[var(--fg-muted)] bg-white"
+                className="flex-1 px-4 py-3.5 rounded-[4px] border border-[#E2E8F0] text-[#0F2240] text-base placeholder:text-[#2D3748]/35 bg-white"
+                style={{ minHeight: "56px" }}
                 aria-describedby={errorMsg ? "waitlist-error" : undefined}
-                aria-invalid={!!errorMsg}
+                aria-invalid={!!errorMsg || undefined}
                 required
               />
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="bg-[var(--brand)] text-white font-semibold px-6 py-3.5 rounded-xl hover:bg-[var(--brand-dark)] disabled:opacity-60 transition-colors whitespace-nowrap"
+                className="bg-[#0F2240] text-white font-semibold px-6 py-3.5 rounded-[4px] hover:bg-[#1a3a60] disabled:opacity-55 transition-colors whitespace-nowrap"
+                style={{ minHeight: "56px" }}
               >
                 {status === "loading" ? "Joining…" : "Join the waitlist"}
               </button>
             </div>
             {errorMsg && (
-              <p id="waitlist-error" role="alert" className="mt-2 text-sm text-red-600">
+              <p id="waitlist-error" role="alert" className="mt-2 text-sm text-[#B45309]">
                 {errorMsg}
               </p>
             )}
-            <p className="mt-3 text-xs text-[var(--fg-muted)]">
+            <p className="mt-3 text-xs text-[#2D3748]/55">
               No spam. One email when early access opens. Unsubscribe any time.
             </p>
           </form>
@@ -593,50 +695,74 @@ function WaitlistSection() {
   );
 }
 
-/* ─── Section 8: Footer ──────────────────────────────────────────── */
+/* ── Footer ─────────────────────────────────────────────────────────── */
 function Footer() {
   return (
-    <footer className="bg-[var(--fg)] text-white/60 py-12 px-4">
+    <footer className="bg-[#0F2240] py-12 px-6" role="contentinfo">
       <div className="max-w-5xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 pb-8 border-b border-white/10">
+        <div className="flex flex-col sm:flex-row justify-between gap-10 pb-8 border-b border-white/10">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="w-7 h-7 rounded-md bg-[var(--brand)] flex items-center justify-center text-white text-xs font-black">CI</span>
-              <span className="font-bold text-white">Can I Extend</span>
-            </div>
-            <p className="text-sm leading-relaxed">
+            <a href="/" aria-label="caniextend — home" className="inline-block mb-4">
+              <Logo dark />
+            </a>
+            <p className="text-white/50 text-sm leading-relaxed max-w-[220px]">
               Making home extension planning accessible to every UK homeowner.
             </p>
           </div>
-          <div>
-            <h3 className="text-white text-sm font-semibold mb-3">Product</h3>
-            <ul className="space-y-2 text-sm">
-              <li><a href="#how-it-works" className="hover:text-white transition-colors">How it works</a></li>
-              <li><a href="#what-you-get" className="hover:text-white transition-colors">What you get</a></li>
-              <li><a href="#samples" className="hover:text-white transition-colors">Sample results</a></li>
-              <li><a href="#waitlist" className="hover:text-white transition-colors">Join the waitlist</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-white text-sm font-semibold mb-3">Legal</h3>
-            <ul className="space-y-2 text-sm">
-              <li><a href="/privacy" className="hover:text-white transition-colors">Privacy policy</a></li>
-              <li><a href="/terms" className="hover:text-white transition-colors">Terms of service</a></li>
-              <li><a href="/cookies" className="hover:text-white transition-colors">Cookie policy</a></li>
-              <li><a href="mailto:hello@caniextend.com" className="hover:text-white transition-colors">Contact us</a></li>
-            </ul>
+
+          <div className="flex gap-12 sm:gap-16">
+            <div>
+              <h3 className="text-white text-sm font-semibold mb-4">Product</h3>
+              <ul className="space-y-3 text-sm">
+                {[
+                  { href: "#how-it-works", label: "How it works" },
+                  { href: "#features", label: "Features" },
+                  { href: "#waitlist", label: "Join the waitlist" },
+                ].map(({ href, label }) => (
+                  <li key={href}>
+                    <a
+                      href={href}
+                      className="text-white/50 hover:text-white transition-colors duration-200"
+                    >
+                      {label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-white text-sm font-semibold mb-4">Legal</h3>
+              <ul className="space-y-3 text-sm">
+                {[
+                  { href: "/privacy", label: "Privacy policy" },
+                  { href: "/terms", label: "Terms" },
+                  { href: "mailto:hello@caniextend.com", label: "Contact" },
+                ].map(({ href, label }) => (
+                  <li key={href}>
+                    <a
+                      href={href}
+                      className="text-white/50 hover:text-white transition-colors duration-200"
+                    >
+                      {label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         </div>
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-          <p>© {new Date().getFullYear()} Can I Extend Ltd. All rights reserved.</p>
-          <p>Registered in England and Wales. Based on GPDO 2015.</p>
+
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-white/35">
+          <p>© 2026 caniextend.com · All rights reserved.</p>
+          <p>Registered in England and Wales · Based on GPDO 2015</p>
         </div>
       </div>
     </footer>
   );
 }
 
-/* ─── Page ───────────────────────────────────────────────────────── */
+/* ── Page ────────────────────────────────────────────────────────────── */
 export default function HomePage() {
   useReveal();
   const scrolled = useNavScroll();
@@ -645,13 +771,13 @@ export default function HomePage() {
     <>
       <Nav scrolled={scrolled} />
       <main>
-        <HeroSection />
-        <HowItWorksSection />
-        <WhatYouGetSection />
-        <SampleResultsSection />
-        <ForWhoSection />
-        <TrustSection />
-        <WaitlistSection />
+        <Hero />
+        <TrustStrip />
+        <HowItWorks />
+        <Testimonials />
+        <Features />
+        <SecondaryCTA />
+        <Waitlist />
       </main>
       <Footer />
     </>
