@@ -88,7 +88,7 @@ function Nav({ scrolled }: { scrolled: boolean }) {
               <a
                 key={href}
                 href={href}
-                className={`text-[15px] font-medium transition-colors duration-200 ${
+                className={`nav-link text-[15px] font-medium transition-colors duration-200 ${
                   scrolled
                     ? "text-[#2D3748] hover:text-[#0F2240]"
                     : "text-white/80 hover:text-white"
@@ -99,7 +99,7 @@ function Nav({ scrolled }: { scrolled: boolean }) {
             ))}
             <a
               href="#waitlist"
-              className={`text-[15px] font-semibold px-5 py-2.5 rounded-[4px] transition-colors duration-200 ${
+              className={`text-[15px] font-semibold px-5 py-2.5 rounded-[4px] transition-all duration-200 hover:scale-[1.02] active:scale-[0.99] ${
                 scrolled
                   ? "bg-[#0F2240] text-white hover:bg-[#1a3a60]"
                   : "bg-white text-[#0F2240] hover:bg-white/90"
@@ -213,7 +213,7 @@ function Hero() {
         <div className="animate-fade-up animate-fade-up-3 flex flex-col sm:flex-row gap-3 justify-center">
           <a
             href="#waitlist"
-            className="inline-flex items-center justify-center gap-2 bg-[#4A7FA5] text-white font-semibold px-8 py-4 rounded-[4px] hover:bg-[#3d6e91] transition-colors text-base"
+            className="inline-flex items-center justify-center gap-2 bg-[#4A7FA5] text-white font-semibold px-8 py-4 rounded-[4px] hover:bg-[#3d6e91] hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 text-base"
             style={{ minHeight: "56px" }}
           >
             Upload your floorplan
@@ -267,8 +267,8 @@ function TrustStrip() {
     <div className="bg-[#F5F4F1] py-6 px-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-14">
-          {items.map((item) => (
-            <div key={item.label} className="flex items-center gap-3">
+          {items.map((item, i) => (
+            <div key={item.label} className="flex items-center gap-3 reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
               {item.icon}
               <span className="text-[14px] font-semibold text-[#0F2240]">{item.label}</span>
             </div>
@@ -527,7 +527,7 @@ function Features() {
           {items.map((item, i) => (
             <div
               key={item.title}
-              className="reveal flex gap-5 p-6 rounded-[8px] border border-[#E2E8F0] hover:border-[#4A7FA5] hover:shadow-[0_6px_16px_rgba(15,34,64,0.08)] transition-all duration-200"
+              className="reveal flex gap-5 p-6 rounded-[8px] border border-[#E2E8F0] hover:border-[#4A7FA5] hover:shadow-[0_6px_16px_rgba(15,34,64,0.08)] hover:-translate-y-1 transition-all duration-200"
               style={{ transitionDelay: `${i * 0.08}s` }}
             >
               <div className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-[4px] bg-[#F5F4F1]">
@@ -561,7 +561,7 @@ function SecondaryCTA() {
         </p>
         <a
           href="#waitlist"
-          className="inline-flex items-center justify-center gap-2 bg-[#0F2240] text-white font-semibold px-8 py-4 rounded-[4px] hover:bg-[#1a3a60] transition-colors text-base"
+          className="inline-flex items-center justify-center gap-2 bg-[#0F2240] text-white font-semibold px-8 py-4 rounded-[4px] hover:bg-[#1a3a60] hover:scale-[1.02] active:scale-[0.99] transition-all duration-200 text-base"
           style={{ minHeight: "56px" }}
         >
           Upload your floorplan
