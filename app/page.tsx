@@ -666,7 +666,7 @@ export default function Home() {
           </a>
         </div>
         <div className="feature-demo">
-          <ScreenshotDemo src="/brand/screenshot-planning.png" alt="Planning check result — Permitted Development confirmed" />
+          <PlanningDemo />
         </div>
       </section>
 
@@ -681,8 +681,8 @@ export default function Home() {
             See sample report <ArrowIcon />
           </a>
         </div>
-        <div className="feature-demo">
-          <ScreenshotDemo src="/brand/screenshot-cost.png" alt="Cost estimate breakdown with itemised line items" />
+        <div className="feature-demo" style={{ background: "var(--navy-mid)" }}>
+          <CostDemo />
         </div>
       </section>
 
@@ -698,14 +698,14 @@ export default function Home() {
           </a>
         </div>
         <div className="feature-demo">
-          <ScreenshotDemo src="/brand/screenshot-design.png" alt="AI-generated extension design on house floorplan" />
+          <DesignDemo />
         </div>
       </section>
 
       {/* FEATURE 04: Neighbour Comparison */}
       <section className="feature light reversed" id="feat-neighbour">
         <div className="feature-demo">
-          <ScreenshotDemo src="/brand/screenshot-neighbour.png" alt="Neighbour comparison — street silhouette with planning data" />
+          <NeighbourDemo />
         </div>
         <div className="feature-copy">
           <h2 className="feature-headline reveal">See what your street already built.</h2>
