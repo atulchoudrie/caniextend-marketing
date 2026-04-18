@@ -1036,7 +1036,7 @@ body {
 }
 .s-upload-demo {
   width: 100%;
-  min-height: 480px;
+  height: 480px;
   overflow: hidden;
 }
 
