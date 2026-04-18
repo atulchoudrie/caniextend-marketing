@@ -31,26 +31,6 @@ function useNavScroll() {
   return scrolled;
 }
 
-function useInView(threshold = 0.3) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          io.disconnect();
-        }
-      },
-      { threshold }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [threshold]);
-  return { ref, inView };
-}
 
 /* ── Arrow Icon ────────────────────────────────────────────────────── */
 function ArrowIcon() {
@@ -197,64 +177,6 @@ function BlueprintSVG() {
   );
 }
 
-/* ── Cost Demo ─────────────────────────────────────────────────────── */
-function CostDemo() {
-  const { ref, inView } = useInView(0.3);
-  const [counter, setCounter] = useState(0);
-  const counterStarted = useRef(false);
-
-  useEffect(() => {
-    if (!inView || counterStarted.current) return;
-    counterStarted.current = true;
-    const target = 68400;
-    const duration = 1800;
-    const start = Date.now();
-    const timer = setInterval(() => {
-      const progress = Math.min((Date.now() - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setCounter(Math.round(eased * target));
-      if (progress === 1) clearInterval(timer);
-    }, 16);
-    return () => clearInterval(timer);
-  }, [inView]);
-
-  const bars = [
-    { name: "Structure & foundations", amount: "£22,400", width: "72%", color: "blue", delay: 0 },
-    { name: "Roof & weatherproofing", amount: "£16,800", width: "58%", color: "blue", delay: 150 },
-    { name: "Glazing & bi-folds", amount: "£12,600", width: "45%", color: "gold", delay: 300 },
-    { name: "Electrics & plumbing", amount: "£9,800", width: "38%", color: "soft", delay: 450 },
-    { name: "Finishes & fit-out", amount: "£6,800", width: "22%", color: "soft", delay: 600 },
-  ];
-
-  return (
-    <div className="cost-demo" ref={ref}>
-      <div className="cost-total">
-        <div className="cost-total-label">Total Estimate</div>
-        <div className="cost-total-value">
-          <span className="currency">£</span>{counter.toLocaleString("en-GB")}
-        </div>
-        <div className="cost-range">Range: £61,500 — £75,200</div>
-      </div>
-      <div className="cost-bars">
-        {bars.map((bar, i) => (
-          <div key={i} className={`cost-bar-item ${inView ? "visible" : ""}`} style={{ transitionDelay: inView ? `${bar.delay + 200}ms` : "0s" }}>
-            <div className="cost-bar-meta">
-              <span className="cost-bar-name">{bar.name}</span>
-              <span className="cost-bar-amount">{bar.amount}</span>
-            </div>
-            <div className="cost-bar-track">
-              <div className={`cost-bar-fill ${bar.color}`} style={{ width: inView ? bar.width : "0" }} />
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="cost-regional">
-        <span>📍</span>
-        Based on Q1 2026 BCIS rates for South West London. Updated quarterly.
-      </div>
-    </div>
-  );
-}
 
 /* ── Main Page ─────────────────────────────────────────────────────── */
 export default function Home() {
@@ -364,8 +286,8 @@ export default function Home() {
         </div>
         <div className="feature-demo">
           <img
-            src="/brand/feature-planning-v2.png"
-            alt="Planning permitted development check result — 4 of 5 rules passed"
+            src="/brand/screenshot-planning.png"
+            alt="App screenshot: planning check result showing permitted development pass state"
             loading="lazy"
             style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
           />
@@ -384,8 +306,13 @@ export default function Home() {
             See sample report <ArrowIcon />
           </a>
         </div>
-        <div className="feature-demo" style={{ background: "var(--navy)" }}>
-          <CostDemo />
+        <div className="feature-demo">
+          <img
+            src="/brand/screenshot-cost.png"
+            alt="App screenshot: cost estimate breakdown showing itemised build costs"
+            loading="lazy"
+            style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
+          />
         </div>
       </section>
 
@@ -403,8 +330,8 @@ export default function Home() {
         </div>
         <div className="feature-demo">
           <img
-            src="/brand/feature-ai-design-v2.png"
-            alt="AI-generated floor plan with extension zone highlighted in Blueprint Blue"
+            src="/brand/screenshot-design.png"
+            alt="App screenshot: AI-generated floor plan with extension zone overlay"
             loading="lazy"
             style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
           />
@@ -415,8 +342,8 @@ export default function Home() {
       <section className="feature dark" id="feat-neighbour">
         <div className="feature-demo" style={{ background: "var(--stone)" }}>
           <img
-            src="/brand/feature-neighbour-v2.png"
-            alt="Victorian terraced street showing neighbours' extensions with Blueprint Blue overlay"
+            src="/brand/screenshot-neighbour.png"
+            alt="App screenshot: neighbour comparison map showing nearby approved extensions"
             loading="lazy"
             style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
           />
@@ -432,20 +359,6 @@ export default function Home() {
           </a>
         </div>
       </section>
-
-      {/* SOCIAL PROOF */}
-      <div className="social-proof">
-        <p className="quote-text reveal">
-          &ldquo;I&rsquo;d been putting off the extension for two years because I didn&rsquo;t know where to start. Can I Extend gave me everything I needed in one afternoon. The planning check alone was worth it.&rdquo;
-        </p>
-        <div className="quote-attr reveal reveal-delay-1">
-          <div className="quote-avatar">🏠</div>
-          <div className="quote-name">
-            <strong>Sarah Thornton</strong>
-            <span>Homeowner, Clapham</span>
-          </div>
-        </div>
-      </div>
 
       {/* COUNTER */}
       <div className="counter-section">
@@ -475,13 +388,8 @@ export default function Home() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem", maxWidth: "1000px", margin: "0 auto" }}>
           {/* Card 1 */}
           <div className="reveal" style={{ background: "#fff", borderRadius: "12px", padding: "2rem", boxShadow: "0 2px 16px rgba(15,34,64,0.08)" }}>
-            <div style={{ width: "56px", height: "56px", borderRadius: "50%", overflow: "hidden", marginBottom: "1.25rem" }}>
-              <img
-                src="/brand/testimonial-avatars-v2.png"
-                alt="Sarah T."
-                loading="lazy"
-                style={{ width: "168px", height: "56px", objectFit: "cover", objectPosition: "15% center", display: "block" }}
-              />
+            <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#0F2240", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem", flexShrink: 0 }}>
+              <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: "0.9rem", color: "#F5F4F1", letterSpacing: "0.02em" }}>ST</span>
             </div>
             <p style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", color: "#0F2240", marginBottom: "1rem", lineHeight: 1.5 }}>
               &ldquo;We found out in 4 minutes our rear extension would get planning. Saved us &pound;3,000 on a consultant.&rdquo;
@@ -490,13 +398,8 @@ export default function Home() {
           </div>
           {/* Card 2 */}
           <div className="reveal reveal-delay-1" style={{ background: "#fff", borderRadius: "12px", padding: "2rem", boxShadow: "0 2px 16px rgba(15,34,64,0.08)" }}>
-            <div style={{ width: "56px", height: "56px", borderRadius: "50%", overflow: "hidden", marginBottom: "1.25rem" }}>
-              <img
-                src="/brand/testimonial-avatars-v2.png"
-                alt="James M."
-                loading="lazy"
-                style={{ width: "168px", height: "56px", objectFit: "cover", objectPosition: "50% center", display: "block" }}
-              />
+            <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#2A5298", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem", flexShrink: 0 }}>
+              <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: "0.9rem", color: "#F5F4F1", letterSpacing: "0.02em" }}>JM</span>
             </div>
             <p style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", color: "#0F2240", marginBottom: "1rem", lineHeight: 1.5 }}>
               &ldquo;The cost estimate was within 8% of our final build quote. Genuinely useful.&rdquo;
@@ -505,13 +408,8 @@ export default function Home() {
           </div>
           {/* Card 3 */}
           <div className="reveal reveal-delay-2" style={{ background: "#fff", borderRadius: "12px", padding: "2rem", boxShadow: "0 2px 16px rgba(15,34,64,0.08)" }}>
-            <div style={{ width: "56px", height: "56px", borderRadius: "50%", overflow: "hidden", marginBottom: "1.25rem" }}>
-              <img
-                src="/brand/testimonial-avatars-v2.png"
-                alt="Priya and Ravi K."
-                loading="lazy"
-                style={{ width: "168px", height: "56px", objectFit: "cover", objectPosition: "85% center", display: "block" }}
-              />
+            <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#1A6B4A", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1.25rem", flexShrink: 0 }}>
+              <span style={{ fontFamily: "var(--font-sans)", fontWeight: 600, fontSize: "0.9rem", color: "#F5F4F1", letterSpacing: "0.02em" }}>PRK</span>
             </div>
             <p style={{ fontFamily: "var(--font-display)", fontSize: "1.1rem", color: "#0F2240", marginBottom: "1rem", lineHeight: 1.5 }}>
               &ldquo;I uploaded a floor plan photo on my phone and had a full report in under 10 minutes.&rdquo;
