@@ -2,51 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 
-function useInView(threshold = 0.3) {
-  const ref = useRef<HTMLElement>(null);
-  const [inView, setInView] = useState(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold });
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, [threshold]);
-  return { ref, inView };
-}
-
-// Calls onProgress via rAF on every scroll tick — no React state, no re-renders.
-function useScrollProgress(
-  sectionRef: React.RefObject<HTMLElement | null>,
-  onProgress: (p: number) => void
-): void {
-  const cbRef = useRef(onProgress);
-  cbRef.current = onProgress;
-
-  useEffect(() => {
-    const el = sectionRef.current;
-    if (!el) return;
-    let ticking = false;
-    const update = () => {
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const raw = (vh - rect.top) / (vh + rect.height);
-      cbRef.current(Math.max(0, Math.min(1, raw)));
-      ticking = false;
-    };
-    const onScroll = () => {
-      if (!ticking) { ticking = true; requestAnimationFrame(update); }
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    update();
-    return () => window.removeEventListener("scroll", onScroll);
-  // Ref object is stable — safe to omit from deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-}
-
-type UploadPhase = "idle" | "dragging" | "dropped" | "processing" | "scanning" | "detecting" | "complete";
-
 function useNavScroll() {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
@@ -57,900 +12,472 @@ function useNavScroll() {
   return scrolled;
 }
 
-function UploadDemo() {
-  const [phase, setPhase] = useState<UploadPhase>("idle");
-  const [progress, setProgress] = useState(0);
-  const [rooms, setRooms] = useState<number[]>([]);
+function useCountUp(target: number, duration = 900) {
+  const [count, setCount] = useState(0);
+  const [active, setActive] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
-    const wait = (ms: number) =>
-      new Promise<void>((res) => {
-        const t = setTimeout(res, ms);
-        if (cancelled) clearTimeout(t);
-      });
-
-    async function loop() {
-      while (!cancelled) {
-        setPhase("idle");
-        setProgress(0);
-        setRooms([]);
-        await wait(1000);
-
-        setPhase("dragging");
-        await wait(600);
-
-        setPhase("dropped");
-        await wait(250);
-
-        setPhase("processing");
-        for (let p = 0; p <= 100 && !cancelled; p += 5) {
-          setProgress(p);
-          await wait(22);
-        }
-        setProgress(100);
-        await wait(150);
-
-        setPhase("scanning");
-        await wait(1200);
-
-        setPhase("detecting");
-        for (let i = 0; i < 4 && !cancelled; i++) {
-          setRooms((r) => [...r, i]);
-          await wait(300);
-        }
-
-        setPhase("complete");
-        await wait(2000);
-      }
-    }
-
-    loop();
-    return () => {
-      cancelled = true;
-    };
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => { if (e.isIntersecting && !started.current) { started.current = true; setActive(true); } },
+      { threshold: 0.4 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
 
-  const showPlan = ["scanning", "detecting", "complete"].includes(phase);
+  useEffect(() => {
+    if (!active) return;
+    const start = Date.now();
+    const timer = setInterval(() => {
+      const p = Math.min((Date.now() - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setCount(Math.round(eased * target));
+      if (p >= 1) clearInterval(timer);
+    }, 16);
+    return () => clearInterval(timer);
+  }, [active, target, duration]);
 
-  return (
-    <div className="ud-wrap">
-      {/* Browser chrome */}
-      <div className="ud-chrome">
-        <div className="ud-dots">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="ud-url">caniextend.com/upload</div>
-      </div>
-
-      {/* App body */}
-      <div className="ud-body">
-        <div
-          className={[
-            "ud-zone",
-            phase === "dragging" ? "ud-zone--hover" : "",
-            showPlan ? "ud-zone--active" : "",
-          ]
-            .filter(Boolean)
-            .join(" ")}
-        >
-          {/* Idle */}
-          {phase === "idle" && (
-            <div className="ud-empty">
-              <div className="ud-empty-icon">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                  <rect
-                    x="1"
-                    y="1"
-                    width="38"
-                    height="38"
-                    rx="10"
-                    stroke="rgba(122,180,212,0.3)"
-                    strokeWidth="1.5"
-                    strokeDasharray="5 4"
-                  />
-                  <path
-                    d="M20 26V14M20 14L14 20M20 14L26 20"
-                    stroke="rgba(122,180,212,0.55)"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <p className="ud-empty-label">Drop your floorplan here</p>
-              <p className="ud-empty-sub">PDF · JPG · PNG</p>
-            </div>
-          )}
-
-          {/* Dragging */}
-          {phase === "dragging" && (
-            <div className="ud-empty ud-empty--hover">
-              <div className="ud-empty-icon ud-empty-icon--glow">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                  <rect
-                    x="1"
-                    y="1"
-                    width="38"
-                    height="38"
-                    rx="10"
-                    stroke="rgba(122,180,212,0.85)"
-                    strokeWidth="1.5"
-                  />
-                  <path
-                    d="M20 26V14M20 14L14 20M20 14L26 20"
-                    stroke="rgba(122,180,212,0.9)"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-              <p className="ud-empty-label ud-empty-label--active">
-                Release to upload
-              </p>
-            </div>
-          )}
-
-          {/* Uploading */}
-          {(phase === "dropped" || phase === "processing") && (
-            <div className="ud-progress">
-              <p className="ud-progress-name">floorplan.pdf</p>
-              <div className="ud-progress-track">
-                <div
-                  className="ud-progress-fill"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <p className="ud-progress-pct">{progress}%</p>
-            </div>
-          )}
-
-          {/* Plan view */}
-          {showPlan && (
-            <div className="ud-plan">
-              {phase === "scanning" && <div className="ud-scan" />}
-
-              <svg
-                viewBox="0 0 240 196"
-                className="ud-fp"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <defs>
-                  <pattern
-                    id="fp-g"
-                    width="12"
-                    height="12"
-                    patternUnits="userSpaceOnUse"
-                  >
-                    <path
-                      d="M 12 0 L 0 0 0 12"
-                      fill="none"
-                      stroke="rgba(74,127,165,0.07)"
-                      strokeWidth="0.5"
-                    />
-                  </pattern>
-                </defs>
-                <rect width="240" height="196" fill="url(#fp-g)" />
-
-                {/* Base walls */}
-                <rect
-                  x="15"
-                  y="15"
-                  width="130"
-                  height="90"
-                  fill="rgba(74,127,165,0.05)"
-                  stroke="rgba(122,180,212,0.55)"
-                  strokeWidth="1.5"
-                />
-                <rect
-                  x="145"
-                  y="15"
-                  width="80"
-                  height="54"
-                  fill="rgba(74,127,165,0.04)"
-                  stroke="rgba(122,180,212,0.55)"
-                  strokeWidth="1.5"
-                />
-                <rect
-                  x="145"
-                  y="69"
-                  width="80"
-                  height="54"
-                  fill="rgba(74,127,165,0.04)"
-                  stroke="rgba(122,180,212,0.55)"
-                  strokeWidth="1.5"
-                />
-                <rect
-                  x="15"
-                  y="105"
-                  width="130"
-                  height="76"
-                  fill="rgba(74,127,165,0.04)"
-                  stroke="rgba(122,180,212,0.55)"
-                  strokeWidth="1.5"
-                />
-
-                {/* Windows */}
-                <line
-                  x1="50"
-                  y1="15"
-                  x2="90"
-                  y2="15"
-                  stroke="rgba(200,155,60,0.55)"
-                  strokeWidth="2.5"
-                />
-                <line
-                  x1="155"
-                  y1="15"
-                  x2="215"
-                  y2="15"
-                  stroke="rgba(200,155,60,0.55)"
-                  strokeWidth="2.5"
-                />
-
-                {/* Door swing */}
-                <path
-                  d="M145 42 Q130 42 130 57"
-                  fill="none"
-                  stroke="rgba(122,180,212,0.38)"
-                  strokeWidth="1"
-                />
-                <line
-                  x1="130"
-                  y1="42"
-                  x2="145"
-                  y2="42"
-                  stroke="rgba(122,180,212,0.38)"
-                  strokeWidth="1"
-                />
-
-                {/* Detected highlights */}
-                {rooms.includes(0) && (
-                  <rect
-                    x="15"
-                    y="15"
-                    width="130"
-                    height="90"
-                    fill="rgba(74,127,165,0.13)"
-                    stroke="rgba(122,180,212,0.9)"
-                    strokeWidth="2"
-                    style={{ transition: "all 0.35s" }}
-                  />
-                )}
-                {rooms.includes(1) && (
-                  <rect
-                    x="145"
-                    y="15"
-                    width="80"
-                    height="54"
-                    fill="rgba(74,127,165,0.13)"
-                    stroke="rgba(122,180,212,0.9)"
-                    strokeWidth="2"
-                    style={{ transition: "all 0.35s" }}
-                  />
-                )}
-                {rooms.includes(2) && (
-                  <rect
-                    x="145"
-                    y="69"
-                    width="80"
-                    height="54"
-                    fill="rgba(200,155,60,0.1)"
-                    stroke="rgba(200,155,60,0.75)"
-                    strokeWidth="2"
-                    style={{ transition: "all 0.35s" }}
-                  />
-                )}
-                {rooms.includes(3) && (
-                  <rect
-                    x="15"
-                    y="105"
-                    width="130"
-                    height="76"
-                    fill="rgba(74,127,165,0.13)"
-                    stroke="rgba(122,180,212,0.9)"
-                    strokeWidth="2"
-                    style={{ transition: "all 0.35s" }}
-                  />
-                )}
-
-                {/* Labels */}
-                {rooms.includes(0) && (
-                  <text
-                    x="80"
-                    y="62"
-                    textAnchor="middle"
-                    fill="rgba(122,180,212,0.85)"
-                    fontFamily="DM Sans,sans-serif"
-                    fontSize="9"
-                    fontWeight="600"
-                    letterSpacing="0.06em"
-                  >
-                    LIVING ROOM
-                  </text>
-                )}
-                {rooms.includes(1) && (
-                  <text
-                    x="185"
-                    y="44"
-                    textAnchor="middle"
-                    fill="rgba(122,180,212,0.85)"
-                    fontFamily="DM Sans,sans-serif"
-                    fontSize="8"
-                    fontWeight="600"
-                    letterSpacing="0.06em"
-                  >
-                    KITCHEN
-                  </text>
-                )}
-                {rooms.includes(2) && (
-                  <text
-                    x="185"
-                    y="98"
-                    textAnchor="middle"
-                    fill="rgba(200,155,60,0.9)"
-                    fontFamily="DM Sans,sans-serif"
-                    fontSize="8"
-                    fontWeight="600"
-                    letterSpacing="0.06em"
-                  >
-                    BEDROOM
-                  </text>
-                )}
-                {rooms.includes(3) && (
-                  <text
-                    x="80"
-                    y="145"
-                    textAnchor="middle"
-                    fill="rgba(122,180,212,0.85)"
-                    fontFamily="DM Sans,sans-serif"
-                    fontSize="9"
-                    fontWeight="600"
-                    letterSpacing="0.06em"
-                  >
-                    HALLWAY
-                  </text>
-                )}
-
-                {/* Dimensions on complete */}
-                {phase === "complete" && (
-                  <>
-                    <text
-                      x="80"
-                      y="191"
-                      textAnchor="middle"
-                      fill="rgba(74,127,165,0.5)"
-                      fontFamily="DM Sans,sans-serif"
-                      fontSize="7"
-                    >
-                      6.5m
-                    </text>
-                    <text
-                      x="235"
-                      y="60"
-                      textAnchor="middle"
-                      fill="rgba(74,127,165,0.5)"
-                      fontFamily="DM Sans,sans-serif"
-                      fontSize="7"
-                      transform="rotate(90,235,60)"
-                    >
-                      4.5m
-                    </text>
-                  </>
-                )}
-              </svg>
-
-              {(phase === "detecting" || phase === "complete") && (
-                <div className="ud-tags">
-                  {rooms.includes(0) && (
-                    <span className="ud-tag">Living room · 28m²</span>
-                  )}
-                  {rooms.includes(1) && (
-                    <span className="ud-tag">Kitchen · 13m²</span>
-                  )}
-                  {rooms.includes(2) && (
-                    <span className="ud-tag ud-tag--gold">Bedroom · 10m²</span>
-                  )}
-                  {rooms.includes(3) && (
-                    <span className="ud-tag">Hallway · 5m²</span>
-                  )}
-                </div>
-              )}
-
-              {phase === "complete" && (
-                <div className="ud-done">
-                  <span className="ud-done-check">✓</span>
-                  <span>4 rooms detected · Designing your extension</span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Floating file */}
-        {phase === "dragging" && (
-          <div className="ud-file">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <path
-                d="M5 2h12l5 5v19H5V2z"
-                fill="rgba(74,127,165,0.2)"
-                stroke="rgba(122,180,212,0.7)"
-                strokeWidth="1.2"
-              />
-              <path
-                d="M17 2v5h5"
-                fill="none"
-                stroke="rgba(122,180,212,0.5)"
-                strokeWidth="1.2"
-              />
-              <line
-                x1="8"
-                y1="13"
-                x2="20"
-                y2="13"
-                stroke="rgba(122,180,212,0.4)"
-                strokeWidth="1"
-              />
-              <line
-                x1="8"
-                y1="16"
-                x2="20"
-                y2="16"
-                stroke="rgba(122,180,212,0.4)"
-                strokeWidth="1"
-              />
-              <line
-                x1="8"
-                y1="19"
-                x2="15"
-                y2="19"
-                stroke="rgba(122,180,212,0.4)"
-                strokeWidth="1"
-              />
-            </svg>
-            <span>floorplan.pdf</span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  return { ref, count };
 }
 
-// ── Postcode form (section 6) ─────────────────────────────────
-const UK_POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
-
-function PostcodeForm() {
-  const [value, setValue] = useState("");
-  const valid = UK_POSTCODE.test(value.trim());
-  return (
-    <div className="s-postcode-stack">
-      <div className="s-postcode-wrap">
-        <input
-          className={`s-postcode-input${valid ? " s-postcode-input--valid" : ""}`}
-          type="text"
-          placeholder="Enter your postcode"
-          value={value}
-          onChange={e => setValue(e.target.value.toUpperCase())}
-          maxLength={8}
-          aria-label="Enter your postcode"
-          autoComplete="postal-code"
-        />
-        {valid && <span className="s-postcode-check" aria-hidden="true">✓</span>}
-      </div>
-      <a href={`https://app.caniextend.com/proposals${valid ? `?postcode=${encodeURIComponent(value.trim())}` : ""}`} className="s-cta-btn">
-        Get started
-      </a>
-    </div>
-  );
-}
-
-// ── Section 3: THE DESIGN ─────────────────────────────────────
-function DesignSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const contextRef = useRef<HTMLDivElement>(null);
+/* ── Blueprint hero animation ── */
+function BlueprintHero() {
+  const scanRef = useRef<HTMLDivElement>(null);
+  const pillRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
-  const svgElemsRef = useRef<Record<string, SVGElement | null>>({});
 
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return;
-    svgElemsRef.current = {
-      candidate: svg.querySelector(".des-candidate"),
-      wall: svg.querySelector(".des-wall"),
-      fill: svg.querySelector(".des-fill"),
-      extLabel: svg.querySelector(".des-ext-label"),
-      sizeLabel: svg.querySelector(".des-size-label"),
-      crosshair: svg.querySelector(".des-crosshair"),
-      genLabel: svg.querySelector(".des-gen-label"),
-      badge: svg.querySelector(".des-badge"),
-    };
+
+    const getEl = (id: string) => svg.querySelector<SVGElement>(`#${id}`);
+
+    const lines: { id: string; delay: number; dur: number }[] = [
+      { id: "l1", delay: 120, dur: 400 },
+      { id: "l2", delay: 400, dur: 250 },
+      { id: "l5", delay: 550, dur: 400 },
+      { id: "l4", delay: 850, dur: 400 },
+      { id: "l3", delay: 1150, dur: 200 },
+      { id: "l6", delay: 1300, dur: 300 },
+      { id: "l7", delay: 1450, dur: 250 },
+      { id: "l8", delay: 1600, dur: 250 },
+      { id: "l9", delay: 1650, dur: 250 },
+      { id: "door1", delay: 1800, dur: 250 },
+      { id: "door2", delay: 1900, dur: 250 },
+      { id: "w1", delay: 1950, dur: 150 },
+      { id: "w2", delay: 2000, dur: 150 },
+      { id: "w3", delay: 2100, dur: 150 },
+    ];
+    const extLines: { id: string; delay: number; dur: number }[] = [
+      { id: "e1", delay: 2300, dur: 300 },
+      { id: "e2", delay: 2550, dur: 300 },
+      { id: "e3", delay: 2800, dur: 300 },
+      { id: "e4", delay: 3000, dur: 200 },
+      { id: "e5", delay: 3150, dur: 250 },
+    ];
+
+    const timers: ReturnType<typeof setTimeout>[] = [];
+
+    // Scan line
+    timers.push(setTimeout(() => {
+      const scan = scanRef.current;
+      if (!scan) return;
+      scan.style.opacity = "1";
+      scan.style.top = "8%";
+      scan.style.transition = "top 1.2s linear, opacity 0.3s";
+      timers.push(setTimeout(() => { scan.style.top = "92%"; }, 80));
+      timers.push(setTimeout(() => { scan.style.opacity = "0"; }, 1400));
+    }, 100));
+
+    lines.forEach(({ id, delay, dur }) => {
+      timers.push(setTimeout(() => {
+        const el = getEl(id);
+        if (!el) return;
+        el.style.transition = `stroke-dashoffset ${dur}ms cubic-bezier(0.4,0,0.2,1)`;
+        el.style.strokeDashoffset = "0";
+      }, delay));
+    });
+
+    timers.push(setTimeout(() => {
+      const el = getEl("houseFill");
+      if (el) el.style.opacity = "1";
+    }, 1950));
+
+    extLines.forEach(({ id, delay, dur }) => {
+      timers.push(setTimeout(() => {
+        const el = getEl(id);
+        if (!el) return;
+        el.style.transition = `stroke-dashoffset ${dur}ms cubic-bezier(0.4,0,0.2,1)`;
+        el.style.strokeDashoffset = "0";
+      }, delay));
+    });
+
+    timers.push(setTimeout(() => {
+      const el = getEl("extFill");
+      if (el) { el.style.opacity = "1"; el.style.transition = "opacity 0.5s"; }
+    }, 3300));
+
+    timers.push(setTimeout(() => {
+      ["dim1", "dim2", "dimv1", "dimv2"].forEach(id => {
+        const el = getEl(id);
+        if (el) { el.style.opacity = "1"; el.style.transition = "opacity 0.4s"; }
+      });
+      ["lbl1", "lbl2", "lbl3", "lbl4", "lbl5"].forEach(id => {
+        const el = getEl(id);
+        if (el) { el.style.opacity = "1"; el.style.transition = "opacity 0.4s"; }
+      });
+      ["badge1", "badge2"].forEach(id => {
+        const el = getEl(id);
+        if (el) { el.style.opacity = "1"; el.style.transform = "scale(1)"; el.style.transition = "opacity 0.3s, transform 0.3s"; }
+      });
+    }, 3400));
+
+    timers.push(setTimeout(() => {
+      if (pillRef.current) pillRef.current.style.opacity = "1";
+    }, 3800));
+
+    return () => timers.forEach(clearTimeout);
   }, []);
 
-  useScrollProgress(sectionRef, (progress) => {
-    const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
-
-    // Context text: slides in as section enters viewport
-    if (contextRef.current) {
-      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.3));
-      contextRef.current.style.opacity = String(ct);
-      contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
-    }
-
-    // Active class — only changes once
-    sectionRef.current?.classList.toggle("s-design--active", p > 0);
-
-    const e = svgElemsRef.current;
-
-    if (e.candidate) e.candidate.style.opacity = p > 0.05 ? "1" : "0";
-
-    if (e.wall) {
-      const wall = e.wall as SVGPathElement;
-      const wallOffset = Math.max(0, 364 - 364 * Math.min(1, Math.max(0, (p - 0.15) / 0.35)));
-      const wallColor = p > 0.5
-        ? `rgba(245,245,245,${(0.2 + 0.5 * Math.min(1, (p - 0.5) / 0.2)).toFixed(2)})`
-        : "#E8FF47";
-      wall.style.strokeDashoffset = String(wallOffset);
-      wall.style.stroke = wallColor;
-      wall.style.opacity = p > 0.15 ? "1" : "0";
-    }
-
-    if (e.fill) e.fill.style.opacity = p > 0.55 ? "1" : "0";
-    if (e.extLabel) e.extLabel.style.opacity = p > 0.6 ? "1" : "0";
-    if (e.sizeLabel) e.sizeLabel.style.opacity = p > 0.65 ? "1" : "0";
-    if (e.crosshair) e.crosshair.style.opacity = p > 0.08 ? "1" : "0";
-    if (e.genLabel) e.genLabel.style.opacity = p > 0.1 && p < 0.75 ? "1" : "0";
-    if (e.badge) e.badge.style.opacity = p > 0.75 ? "1" : "0";
-  });
-
   return (
-    <section
-      ref={sectionRef as React.RefObject<HTMLElement>}
-      className="s-design"
-      aria-label="The Design"
-    >
-      <div ref={contextRef} className="s-context">
-        <p className="s-context-step">Step 1</p>
-        <p className="s-context-text">Our AI designs your extension — optimised for your floorplan, within permitted development limits.</p>
+    <div className="hero-illustration" aria-hidden="true">
+      <div className="blueprint-frame">
+        <div className="corner corner-tl" />
+        <div className="corner corner-tr" />
+        <div className="corner corner-bl" />
+        <div className="corner corner-br" />
+        <div ref={scanRef} className="scan-line" style={{ opacity: 0, top: "8%" }} />
+        <div ref={pillRef} className="status-pill">✓ Permitted Development</div>
+        <svg ref={svgRef} id="blueprint-svg" viewBox="0 0 480 440" xmlns="http://www.w3.org/2000/svg">
+          <polygon className="bp-fill" id="houseFill" points="60,80 320,80 320,320 60,320" style={{ opacity: 0 }} />
+          <rect className="bp-fill-ext" id="extFill" x="320" y="160" width="100" height="120" style={{ opacity: 0 }} />
+
+          <line className="bp-line" id="l1" x1="60" y1="80" x2="320" y2="80" />
+          <line className="bp-line" id="l2" x1="320" y1="80" x2="320" y2="160" />
+          <line className="bp-line" id="l3" x1="320" y1="280" x2="320" y2="320" />
+          <line className="bp-line" id="l4" x1="320" y1="320" x2="60" y2="320" />
+          <line className="bp-line" id="l5" x1="60" y1="320" x2="60" y2="80" />
+
+          <line className="bp-line" id="l6" x1="60" y1="200" x2="220" y2="200" style={{ strokeDasharray: 800, strokeDashoffset: 800, opacity: 0.5 }} />
+          <line className="bp-line" id="l7" x1="190" y1="80" x2="190" y2="200" style={{ strokeDasharray: 800, strokeDashoffset: 800, opacity: 0.5 }} />
+          <line className="bp-line" id="l8" x1="190" y1="200" x2="190" y2="320" style={{ strokeDasharray: 800, strokeDashoffset: 800, opacity: 0.5 }} />
+          <line className="bp-line" id="l9" x1="220" y1="200" x2="320" y2="200" style={{ strokeDasharray: 800, strokeDashoffset: 800, opacity: 0.5 }} />
+
+          <path className="bp-line" id="door1" d="M190,200 Q165,180 140,200" style={{ strokeWidth: 1.5, strokeDasharray: 200, strokeDashoffset: 200, opacity: 0.6 }} />
+          <path className="bp-line" id="door2" d="M190,200 Q210,225 190,250" style={{ strokeWidth: 1.5, strokeDasharray: 200, strokeDashoffset: 200, opacity: 0.6 }} />
+
+          <line className="bp-line" id="w1" x1="90" y1="80" x2="90" y2="68" style={{ strokeDasharray: 100, strokeDashoffset: 100, opacity: 0.5 }} />
+          <line className="bp-line" id="w2" x1="150" y1="80" x2="150" y2="68" style={{ strokeDasharray: 100, strokeDashoffset: 100, opacity: 0.5 }} />
+          <line className="bp-line" id="w3" x1="240" y1="80" x2="240" y2="68" style={{ strokeDasharray: 100, strokeDashoffset: 100, opacity: 0.5 }} />
+
+          <line className="bp-line-ext" id="e1" x1="320" y1="160" x2="420" y2="160" />
+          <line className="bp-line-ext" id="e2" x1="420" y1="160" x2="420" y2="280" />
+          <line className="bp-line-ext" id="e3" x1="420" y1="280" x2="320" y2="280" />
+          <line className="bp-line-ext" id="e4" x1="340" y1="280" x2="400" y2="280" style={{ strokeWidth: 3 }} />
+          <path className="bp-line-ext" id="e5" d="M340,280 Q370,254 400,280" style={{ strokeWidth: 1.5, strokeDasharray: 200, strokeDashoffset: 200 }} />
+
+          <line className="bp-dim-line" id="dim1" x1="60" y1="340" x2="320" y2="340" />
+          <line className="bp-dim-line" id="dim2" x1="320" y1="340" x2="420" y2="340" />
+          <line className="bp-dim-line" id="dimv1" x1="440" y1="80" x2="440" y2="320" />
+          <line className="bp-dim-line" id="dimv2" x1="440" y1="160" x2="440" y2="280" />
+
+          <text className="bp-label" id="lbl1" x="180" y="360" textAnchor="middle">8.0m</text>
+          <text className="bp-label" id="lbl2" x="370" y="360" textAnchor="middle">3.0m</text>
+          <text className="bp-label" id="lbl3" x="460" y="205" textAnchor="middle" transform="rotate(90, 460, 205)">7.2m</text>
+          <text className="bp-label-ext" id="lbl4" x="370" y="228" textAnchor="middle">EXTENSION</text>
+          <text className="bp-label-ext" id="lbl5" x="370" y="244" textAnchor="middle" style={{ fontSize: "9px", opacity: 0.7 }}>+36m²</text>
+
+          <rect className="bp-badge" id="badge1" x="338" y="175" width="64" height="22" rx="4" fill="rgba(200,155,60,0.15)" stroke="rgba(200,155,60,0.35)" strokeWidth="1" />
+          <text className="bp-badge" id="badge2" x="370" y="190" textAnchor="middle" fill="var(--gold-light)" fontFamily="DM Sans" fontSize="9" fontWeight="600">AI DESIGNED</text>
+        </svg>
       </div>
-      <svg
-        ref={svgRef}
-        className="s-design-svg"
-        viewBox="0 0 300 280"
-        xmlns="http://www.w3.org/2000/svg"
-        aria-hidden="true"
-      >
-        <defs>
-          <pattern id="dg" width="12" height="12" patternUnits="userSpaceOnUse">
-            <path d="M 12 0 L 0 0 0 12" fill="none" stroke="rgba(232,255,71,0.04)" strokeWidth="0.5"/>
-          </pattern>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2" result="blur"/>
-            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-        <rect width="300" height="280" fill="url(#dg)"/>
-
-        {/* Existing rooms */}
-        <rect x="20" y="20" width="140" height="96" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
-        <rect x="160" y="20" width="100" height="56" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
-        <rect x="160" y="76" width="100" height="60" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
-        <rect x="20" y="116" width="140" height="80" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
-
-        {/* Candidate area (dashed outline) — opacity driven by scroll */}
-        <rect
-          className="des-candidate"
-          x="30" y="196" width="120" height="58"
-          fill="rgba(232,255,71,0.04)" stroke="rgba(232,255,71,0.15)"
-          strokeWidth="1" strokeDasharray="5 4"
-          style={{ opacity: 0 }}
-        />
-
-        {/* Animated wall perimeter */}
-        <path
-          className="des-wall"
-          d="M 30 196 L 30 254 L 150 254 L 150 196"
-          fill="none" stroke="#E8FF47" strokeWidth="2"
-          strokeLinecap="round" strokeLinejoin="round"
-          strokeDasharray="364" strokeDashoffset="364"
-          style={{ opacity: 0, transition: "opacity 0.2s" }}
-        />
-
-        {/* Fill */}
-        <rect
-          className="des-fill"
-          x="31" y="197" width="118" height="56"
-          fill="rgba(232,255,71,0.06)"
-          style={{ opacity: 0, transition: "opacity 0.3s" }}
-        />
-
-        {/* Extension label */}
-        <text
-          className="des-ext-label"
-          x="90" y="230" textAnchor="middle"
-          fill="#8A8A8A" fontFamily="DM Sans,sans-serif"
-          fontSize="9" letterSpacing="0.04em"
-          style={{ opacity: 0, transition: "opacity 0.3s" }}
-        >Extension — 4.2m × 5.8m</text>
-
-        {/* Size label */}
-        <text
-          className="des-size-label"
-          x="90" y="248" textAnchor="middle"
-          fill="#F5F5F5" fontFamily="DM Sans,sans-serif"
-          fontSize="8" fontWeight="600"
-          style={{ opacity: 0, transition: "opacity 0.3s" }}
-        >24.4 m²</text>
-
-        {/* Crosshair */}
-        <g className="des-crosshair" style={{ opacity: 0, transition: "opacity 0.3s" }}>
-          <line x1="86" y1="196" x2="94" y2="196" stroke="#E8FF47" strokeWidth="1.5"/>
-          <line x1="90" y1="192" x2="90" y2="200" stroke="#E8FF47" strokeWidth="1.5"/>
-          <circle cx="90" cy="196" r="3" fill="none" stroke="#E8FF47" strokeWidth="1"/>
-        </g>
-
-        {/* Generating label */}
-        <text
-          className="des-gen-label"
-          x="24" y="17" fill="#8A8A8A"
-          fontFamily="DM Sans,sans-serif" fontSize="9"
-          style={{ opacity: 0, transition: "opacity 0.3s" }}
-        >Generating extension…</text>
-
-        {/* Badge */}
-        <g className="des-badge" style={{ opacity: 0, transition: "opacity 0.3s" }}>
-          <rect x="196" y="14" width="92" height="20" rx="10" fill="rgba(255,255,255,0.08)"/>
-          <text x="242" y="27" textAnchor="middle" fill="#F5F5F5"
-            fontFamily="DM Sans,sans-serif" fontSize="9" fontWeight="500">Design complete</text>
-        </g>
-      </svg>
-
-      <p className="s-section-label s-section-label--bl">The Design</p>
-    </section>
+    </div>
   );
 }
 
-// ── Section 4: THE STREET ─────────────────────────────────────
-const STREET_HOUSES: { h: number; ext: boolean; yours?: boolean }[] = [
-  { h: 52, ext: false }, { h: 60, ext: true },  { h: 48, ext: false },
-  { h: 58, ext: true },  { h: 72, ext: false, yours: true },
-  { h: 55, ext: true },  { h: 50, ext: false }, { h: 62, ext: true },
-  { h: 46, ext: false },
-];
+/* ── Feature 01: Planning Demo ── */
+function PlanningDemo() {
+  const ref = useRef<HTMLDivElement>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
 
-function StreetSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const contextRef = useRef<HTMLDivElement>(null);
-  const housesRef = useRef<HTMLDivElement>(null);
-  const statsRef = useRef<HTMLDivElement>(null);
-  const footnoteRef = useRef<HTMLParagraphElement>(null);
-
-  const prevRef = useRef({ dots: false, stats: false, footnote: false, visibleCount: -1 });
-
-  useScrollProgress(sectionRef, (progress) => {
-    const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
-
-    // Context text — wider animation window so it visibly slides in with scroll
-    if (contextRef.current) {
-      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.3));
-      contextRef.current.style.opacity = String(ct);
-      contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
-    }
-
-    // Houses — direct DOM class toggle, no re-render
-    const newVisibleCount = Math.min(9, Math.floor(p * 9 / 0.3));
-    if (newVisibleCount !== prevRef.current.visibleCount) {
-      prevRef.current.visibleCount = newVisibleCount;
-      const houseEls = housesRef.current?.children;
-      if (houseEls) {
-        for (let i = 0; i < houseEls.length; i++) {
-          (houseEls[i] as HTMLElement).classList.toggle("st-house--vis", i < newVisibleCount);
-        }
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        const items = el.querySelectorAll<HTMLElement>(".check-item");
+        items.forEach(item => {
+          const delay = parseInt(item.dataset.delay ?? "0");
+          setTimeout(() => item.classList.add("visible"), delay * 0.5 + 150);
+        });
+        setTimeout(() => resultRef.current?.classList.add("visible"), 700);
+        obs.disconnect();
       }
-    }
+    }, { threshold: 0.3 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
-    // All threshold toggles via direct DOM — no React re-renders
-    const newDots = p > 0.35;
-    if (newDots !== prevRef.current.dots) {
-      prevRef.current.dots = newDots;
-      housesRef.current?.classList.toggle("st-dots-vis", newDots);
-    }
-
-    const newStats = p > 0.55;
-    if (newStats !== prevRef.current.stats) {
-      prevRef.current.stats = newStats;
-      statsRef.current?.classList.toggle("st-stats--vis", newStats);
-    }
-
-    const newFootnote = p > 0.7;
-    if (newFootnote !== prevRef.current.footnote) {
-      prevRef.current.footnote = newFootnote;
-      footnoteRef.current?.classList.toggle("st-footnote--vis", newFootnote);
-    }
-  });
+  const checks = [
+    { icon: "pass", title: "Height limit", desc: "3.0m extension ≤ 4.0m maximum single-storey", badge: "Pass", delay: 0 },
+    { icon: "pass", title: "Rear setback", desc: "Does not project beyond rear of original dwelling", badge: "Pass", delay: 200 },
+    { icon: "pass", title: "Side boundary", desc: "1.2m clear of boundary — minimum 1.0m required", badge: "Pass", delay: 400 },
+    { icon: "warn", title: "Eaves height", desc: "Within 2m of boundary — materials must match", badge: "Note", delay: 600 },
+    { icon: "pass", title: "Conservation area", desc: "Not in designated conservation area", badge: "Pass", delay: 800 },
+  ];
 
   return (
-    <section ref={sectionRef as React.RefObject<HTMLElement>} className="s-street" aria-label="The Street">
-      <div ref={contextRef} className="s-context">
-        <p className="s-context-step">Step 2</p>
-        <p className="s-context-text">See which neighbours have extended, what they built, and whether they got approval.</p>
-      </div>
-      <div className="s-street-inner">
-        <div className="s-street-scene" aria-hidden="true">
-          <div className="st-ground"/>
-          <div ref={housesRef} className="st-houses">
-            {STREET_HOUSES.map((h, i) => (
-              <div
-                key={i}
-                className={`st-house${h.yours ? " st-house--yours" : ""}`}
-                style={{ transitionDelay: `${i * 50}ms` }}
-              >
-                {h.ext ? <span className="st-dot st-dot--ext"/> : <span className="st-dot st-dot--none"/>}
-                <div className="st-roof" style={{ borderBottomWidth: `${Math.round(h.h * 0.35)}px` }}/>
-                <div className="st-body" style={{ height: `${h.h}px` }}>
-                  {i === 1 && <span className="st-tooltip">Approved 2022</span>}
-                  {i === 3 && <span className="st-tooltip">Single storey rear</span>}
-                  {i === 5 && <span className="st-tooltip">Cost est. £38k</span>}
-                </div>
-              </div>
-            ))}
+    <div ref={ref} className="planning-demo" id="planningDemo">
+      <div className="planning-title">Planning Assessment</div>
+      <div className="planning-sub">14 Carlisle Road, SW11 6PD</div>
+
+      {checks.map((c, i) => (
+        <div key={i} className="check-item" data-delay={c.delay}>
+          <div className={`check-icon ${c.icon}`}>{c.icon === "pass" ? "✓" : "!"}</div>
+          <div className="check-text">
+            <strong>{c.title}</strong>
+            <span>{c.desc}</span>
           </div>
-          <div ref={statsRef} className="st-stats">
-            <div className="st-stat">
-              <span className="st-stat-val">4</span>
-              <span className="st-stat-lbl">neighbours extended within 100m</span>
-            </div>
-            <div className="st-stat">
-              <span className="st-stat-val">100%</span>
-              <span className="st-stat-lbl">approval rate</span>
-            </div>
-          </div>
-          <p ref={footnoteRef} className="st-footnote">Data from Land Registry · Updated monthly</p>
+          <span className={`check-badge ${c.icon}`}>{c.badge}</span>
+        </div>
+      ))}
+
+      <div ref={resultRef} className="planning-result">
+        <div className="planning-result-icon">📋</div>
+        <div className="planning-result-text">
+          <strong>Permitted Development — 4/5 passed</strong>
+          <span>No planning application required. One advisory note.</span>
         </div>
       </div>
-      <p className="s-section-label s-section-label--bl">The Street</p>
-    </section>
+    </div>
   );
 }
 
-// ── Section 5: THE RESULT ─────────────────────────────────────
-function ResultSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const contextRef = useRef<HTMLDivElement>(null);
-  const card1Ref = useRef<HTMLDivElement>(null);
-  const card2Ref = useRef<HTMLDivElement>(null);
-  const card3Ref = useRef<HTMLDivElement>(null);
-  const checksRef = useRef<HTMLUListElement>(null);
-  const costRef = useRef<HTMLParagraphElement>(null);
-  const barFillRef = useRef<HTMLDivElement>(null);
-  const badgeRef = useRef<HTMLSpanElement>(null);
+/* ── Feature 02: Cost Demo ── */
+function CostDemo() {
+  const ref = useRef<HTMLDivElement>(null);
+  const numRef = useRef<HTMLSpanElement>(null);
+  const started = useRef(false);
 
-  const prevBadgeRef = useRef(false);
+  const bars = [
+    { name: "Structure & foundations", amount: "£22,400", pct: "72%", type: "blue", delay: 0 },
+    { name: "Roof & weatherproofing", amount: "£16,800", pct: "58%", type: "blue", delay: 150 },
+    { name: "Glazing & bi-folds", amount: "£12,600", pct: "45%", type: "gold", delay: 300 },
+    { name: "Electrics & plumbing", amount: "£9,800", pct: "38%", type: "soft", delay: 450 },
+    { name: "Finishes & fit-out", amount: "£6,800", pct: "22%", type: "soft", delay: 600 },
+  ];
 
-  useScrollProgress(sectionRef, (progress) => {
-    const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        // Count-up
+        const target = 68400;
+        const dur = 900;
+        const start = Date.now();
+        const timer = setInterval(() => {
+          const p = Math.min((Date.now() - start) / dur, 1);
+          const eased = 1 - Math.pow(1 - p, 3);
+          if (numRef.current) numRef.current.textContent = Math.round(eased * target).toLocaleString("en-GB");
+          if (p >= 1) clearInterval(timer);
+        }, 16);
 
-    // Context text — wider window so it visibly animates with scroll
-    if (contextRef.current) {
-      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.3));
-      contextRef.current.style.opacity = String(ct);
-      contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
-    }
+        // Bar items
+        el.querySelectorAll<HTMLElement>(".cost-bar-item").forEach(item => {
+          const delay = parseInt(item.dataset.delay ?? "0");
+          const fill = item.querySelector<HTMLElement>(".cost-bar-fill");
+          const width = fill?.dataset.width ?? "0";
+          setTimeout(() => {
+            item.classList.add("visible");
+            if (fill) fill.style.width = width;
+          }, delay * 0.5 + 100);
+        });
 
-    const showCard1 = p > 0.1;
-    const showCard2 = p > 0.35;
-    const showCard3 = p > 0.6;
-    const showGlow = p > 0.75;
-    const checkCount = Math.min(3, Math.floor(Math.max(0, p - 0.12) / 0.06));
-
-    // Cards — direct class toggle, no re-render
-    card1Ref.current?.classList.toggle("rc-card--vis", showCard1);
-    card1Ref.current?.classList.toggle("rc-card--glow", showGlow);
-    card2Ref.current?.classList.toggle("rc-card--vis", showCard2);
-    card2Ref.current?.classList.toggle("rc-card--glow", showGlow);
-    card3Ref.current?.classList.toggle("rc-card--vis", showCard3);
-    card3Ref.current?.classList.toggle("rc-card--glow", showGlow);
-
-    // Check items — direct class toggle
-    const checks = checksRef.current?.children;
-    if (checks) {
-      for (let i = 0; i < checks.length; i++) {
-        (checks[i] as HTMLElement).classList.toggle("rc-check--vis", i < checkCount);
+        obs.disconnect();
       }
-    }
-
-    // Cost counter — direct text update
-    if (costRef.current) {
-      const costProgress = Math.max(0, Math.min(1, (p - 0.35) / 0.2));
-      const count = Math.round(42500 * (1 - Math.pow(1 - costProgress, 3)));
-      costRef.current.textContent = `£${count.toLocaleString("en-GB")}`;
-    }
-
-    // Bar fill — direct style update
-    if (barFillRef.current) {
-      barFillRef.current.style.width = showCard2 ? "52%" : "0";
-    }
-
-    // Badge — direct class toggle, no re-render
-    const newBadge = checkCount >= 3;
-    if (newBadge !== prevBadgeRef.current) {
-      prevBadgeRef.current = newBadge;
-      badgeRef.current?.classList.toggle("rc-badge--vis", newBadge);
-    }
-  });
+    }, { threshold: 0.3 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   return (
-    <section ref={sectionRef as React.RefObject<HTMLElement>} className="s-result" aria-label="The Result">
-      <div ref={contextRef} className="s-context">
-        <p className="s-context-step">Step 3</p>
-        <p className="s-context-text">Get your planning check, cost estimate, and full extension design — all in one report.</p>
+    <div ref={ref} className="cost-demo" id="costDemo">
+      <div className="cost-total">
+        <div className="cost-total-label">Total Estimate</div>
+        <div className="cost-total-value">
+          <span className="currency">£</span><span ref={numRef}>0</span>
+        </div>
+        <div className="cost-range">Range: £61,500 — £75,200</div>
       </div>
-      <div className="s-result-inner">
-        <div ref={card1Ref} className="rc-card">
-          <p className="rc-header">Planning Check</p>
-          <ul ref={checksRef} className="rc-checks">
-            {[
-              "Permitted Development",
-              "Rear extension — 4m permitted",
-              "No Article 4 restrictions",
-            ].map((txt, i) => (
-              <li key={i} className="rc-check" style={{ transitionDelay: `${i * 80}ms` }}>
-                <span className="rc-tick">✓</span> {txt}
-              </li>
-            ))}
-          </ul>
-          <span ref={badgeRef} className="rc-badge">Permitted Development</span>
-        </div>
-
-        <div ref={card2Ref} className="rc-card" style={{ transitionDelay: "0.15s" }}>
-          <p className="rc-header">Cost Estimate</p>
-          <p ref={costRef} className="rc-cost">£0</p>
-          <p className="rc-cost-sub">Typical build for 24.4 m² rear extension</p>
-          <div className="rc-bar-track">
-            <div ref={barFillRef} className="rc-bar-fill" style={{ width: "0" }}/>
+      <div className="cost-bars">
+        {bars.map((b, i) => (
+          <div key={i} className="cost-bar-item" data-delay={b.delay}>
+            <div className="cost-bar-meta">
+              <span className="cost-bar-name">{b.name}</span>
+              <span className="cost-bar-amount">{b.amount}</span>
+            </div>
+            <div className="cost-bar-track">
+              <div className={`cost-bar-fill ${b.type}`} data-width={b.pct} style={{ width: 0 }} />
+            </div>
           </div>
-        </div>
+        ))}
+      </div>
+      <div className="cost-regional">
+        <span>📍</span>
+        Based on Q1 2026 BCIS rates for South West London. Updated quarterly.
+      </div>
+    </div>
+  );
+}
 
-        <div ref={card3Ref} className="rc-card" style={{ transitionDelay: "0.3s" }}>
-          <p className="rc-header">Your Design</p>
-          <div className="rc-plan-thumb" aria-hidden="true">
-            <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-              <rect width="200" height="120" fill="#162E52"/>
-              <rect x="10" y="10" width="90" height="60" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
-              <rect x="100" y="10" width="60" height="34" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
-              <rect x="100" y="44" width="60" height="36" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
-              <rect x="10" y="70" width="90" height="40" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
-              <rect x="18" y="110" width="74" height="8" fill="rgba(232,255,71,0.15)" stroke="rgba(232,255,71,0.6)" strokeWidth="1"/>
-            </svg>
+/* ── Feature 03: Neighbour Demo ── */
+function NeighbourDemo() {
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        el.querySelectorAll<HTMLElement>(".house").forEach(h => {
+          const delay = parseInt(h.dataset.delay ?? "0");
+          setTimeout(() => h.classList.add("visible"), delay * 0.5 + 100);
+        });
+        el.querySelectorAll<HTMLElement>(".n-stat").forEach(s => {
+          const delay = parseInt(s.dataset.delay ?? "0");
+          setTimeout(() => s.classList.add("visible"), delay + 500);
+        });
+        obs.disconnect();
+      }
+    }, { threshold: 0.3 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className="neighbour-demo" id="neighbourDemo">
+      <div className="street-label">Carlisle Road, SW11</div>
+      <div className="street-view">
+        <div className="house" data-delay="0" style={{ flex: "0.85" }}>
+          <div className="house-body neighbour" style={{ height: 55 }}>
+            <div className="house-ext-tag">+18m²</div>
+            <div className="house-base" />
           </div>
-          <p className="rc-spec">Rear extension — 4.2 × 5.8m</p>
-          <p className="rc-spec">Single storey, flat roof</p>
+          <span className="house-label">No. 8</span>
+        </div>
+        <div className="house" data-delay="200" style={{ flex: "1.1" }}>
+          <div className="house-body neighbour" style={{ height: 68 }}>
+            <div className="house-ext-tag">+52m²</div>
+            <div className="house-base" />
+          </div>
+          <span className="house-label">No. 10</span>
+        </div>
+        <div className="house" data-delay="100" style={{ flex: "1.25" }}>
+          <div className="house-body yours" style={{ height: 76 }}>
+            <div className="house-ext-tag" style={{ color: "var(--blue)", borderColor: "var(--blue)" }}>YOUR PLAN +36m²</div>
+            <div className="house-base" style={{ background: "var(--blue)", opacity: 0.3 }} />
+          </div>
+          <span className="house-label yours-label">No. 14 (You)</span>
+        </div>
+        <div className="house" data-delay="300" style={{ flex: "0.9" }}>
+          <div className="house-body neighbour" style={{ height: 50 }}>
+            <div className="house-ext-tag">No ext.</div>
+            <div className="house-base" />
+          </div>
+          <span className="house-label">No. 16</span>
+        </div>
+        <div className="house" data-delay="450" style={{ flex: "1.0" }}>
+          <div className="house-body neighbour" style={{ height: 62 }}>
+            <div className="house-ext-tag">+12m²</div>
+            <div className="house-base" />
+          </div>
+          <span className="house-label">No. 18</span>
         </div>
       </div>
-      <p className="s-section-label s-section-label--bl">The Result</p>
-    </section>
+      <div className="neighbour-stats">
+        <div className="n-stat" data-delay="0">
+          <div className="n-stat-value" style={{ color: "var(--blue)" }}>3/4</div>
+          <div className="n-stat-label">neighbours have extended</div>
+        </div>
+        <div className="n-stat" data-delay="150">
+          <div className="n-stat-value" style={{ color: "#1a7f5a" }}>100%</div>
+          <div className="n-stat-label">planning approval rate on this street</div>
+        </div>
+        <div className="n-stat" data-delay="300">
+          <div className="n-stat-value">+36m²</div>
+          <div className="n-stat-label">your proposed extension size</div>
+        </div>
+        <div className="n-stat" data-delay="450">
+          <div className="n-stat-value">+£68k</div>
+          <div className="n-stat-label">estimated added property value</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Counter section with count-up ── */
+function TrustCounter() {
+  const { ref, count } = useCountUp(2847, 1200);
+  return (
+    <div className="counter-section">
+      <h2 className="counter-heading">Trusted by homeowners across the UK</h2>
+      <div ref={ref} className="counter-value reveal">{count.toLocaleString("en-GB")}</div>
+      <div className="counter-sub reveal">extensions designed and counting</div>
+      <div className="counter-substats reveal">
+        <div className="counter-substat">
+          <div className="counter-substat-num">47</div>
+          <div className="counter-substat-label">London postcodes covered</div>
+        </div>
+        <div className="counter-substat">
+          <div className="counter-substat-num">9 min</div>
+          <div className="counter-substat-label">average report time</div>
+        </div>
+        <div className="counter-substat">
+          <div className="counter-substat-num">100%</div>
+          <div className="counter-substat-label">online — no account needed</div>
+        </div>
+      </div>
+    </div>
   );
 }
 
 export default function Home() {
   const scrolled = useNavScroll();
 
+  /* Hero reveal + scroll-triggered .reveal elements */
   useEffect(() => {
-    const timer = setTimeout(() => {
-      document
-        .querySelectorAll<HTMLElement>(".hero-in")
-        .forEach((el, i) => {
-          setTimeout(() => el.classList.add("visible"), 150 + i * 160);
-        });
+    const heroTimer = setTimeout(() => {
+      document.querySelectorAll<HTMLElement>(".hero-in").forEach((el, i) => {
+        setTimeout(() => el.classList.add("visible"), 150 + i * 160);
+      });
     }, 80);
-    return () => clearTimeout(timer);
+
+    const revealObs = new IntersectionObserver(
+      (entries) => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("visible"); }),
+      { threshold: 0.15 }
+    );
+    document.querySelectorAll(".reveal").forEach(el => revealObs.observe(el));
+
+    return () => {
+      clearTimeout(heroTimer);
+      revealObs.disconnect();
+    };
   }, []);
 
   return (
     <>
-      {/* NAV — minimal */}
+      {/* NAV */}
       <nav className={`site-nav ${scrolled ? "scrolled" : ""}`}>
         <a href="/" className="nav-logo">
           <div className="nav-logo-mark">
@@ -963,25 +490,33 @@ export default function Home() {
         </a>
       </nav>
 
-      {/* ── SECTION 1: HERO ── */}
-      <section className="s-hero" aria-label="Hero">
-        <div className="s-hero-grid" aria-hidden="true" />
-        <div className="s-hero-glow" aria-hidden="true" />
-        <div className="s-hero-inner">
-          <h1 className="s-statement hero-in">
-            See what your
-            <br />
-            home could
-            <br />
-            <em>become.</em>
+      {/* ── HERO (split layout) ── */}
+      <section className="hero" aria-label="Hero">
+        <div className="hero-content">
+          <div className="hero-label hero-in">AI-Powered Extension Planning</div>
+          <h1 className="hero-headline hero-in">
+            See what your<br />
+            home could<br />
+            <span className="accent">become.</span>
           </h1>
-          <p className="s-hero-sub hero-in">
-            Upload your floorplan. Get a professional extension proposal, cost estimate, and planning check — in minutes.
+          <p className="hero-sub hero-in">
+            Upload a floorplan. Our AI designs your extension, checks planning permission, estimates costs, and compares your neighbours — in under ten minutes.
           </p>
-          <a href="https://app.caniextend.com/proposals" className="s-cta hero-in">
-            Upload your floorplan →
-          </a>
+          <div className="hero-actions hero-in">
+            <a href="https://app.caniextend.com/proposals" className="btn-primary">Upload your floorplan →</a>
+            <a href="/features" className="btn-ghost">See how it works</a>
+          </div>
+          <div className="hero-social hero-in">
+            <div className="hero-social-faces">
+              <div className="face" aria-hidden="true">🏠</div>
+              <div className="face" aria-hidden="true">🏡</div>
+              <div className="face" aria-hidden="true">🏘</div>
+              <div className="face" aria-hidden="true">+</div>
+            </div>
+            <span className="hero-social-text">2,847 extensions designed this month</span>
+          </div>
         </div>
+        <BlueprintHero />
       </section>
 
       {/* ── TRUST STRIP ── */}
@@ -1008,24 +543,100 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── SECTION 2: THE UPLOAD ── */}
-      <section className="s-upload" aria-label="Upload your floorplan">
-        <div className="s-upload-inner">
-          <p className="s-section-label">Upload your floorplan</p>
-          <div className="s-upload-demo">
-            <UploadDemo />
+      {/* ── STATEMENT DIVIDER ── */}
+      <div className="statement">
+        <div className="statement-number" aria-hidden="true">10</div>
+        <p className="statement-text reveal">
+          Ten minutes. <span className="soft">Not ten weeks.</span>
+        </p>
+      </div>
+
+      {/* ── FEATURE 01: Planning Rules (dark) ── */}
+      <section className="feature-section dark" id="feat-planning" aria-label="Planning Rules">
+        <div className="feature">
+          <div className="feature-copy">
+            <div className="feature-index reveal">01 / Planning Rules</div>
+            <h2 className="feature-headline reveal">Your extension, checked against every rule.</h2>
+            <p className="feature-body reveal">
+              We run your design against UK Permitted Development rights, local Article 4 directions, and conservation area restrictions — in seconds. No solicitor required.
+            </p>
+            <a href="/features" className="feature-link reveal">
+              See how it works
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10m0 0-4-4m4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </a>
+            <ul className="proof-list reveal">
+              <li>Checks 47 local authority rules automatically</li>
+              <li>Covers PD + Article 4 directions</li>
+              <li>Updated when guidance changes</li>
+            </ul>
+            <div className="stat-callout reveal">
+              <div className="stat-callout-value">94%</div>
+              <div className="stat-callout-label">confirm PD eligibility first time</div>
+            </div>
+          </div>
+          <div className="feature-demo" aria-hidden="true">
+            <PlanningDemo />
           </div>
         </div>
       </section>
 
-      {/* ── SECTION 3: THE DESIGN ── */}
-      <DesignSection />
+      {/* ── FEATURE 02: Cost Estimate (light, reversed) ── */}
+      <section className="feature-section light" id="feat-cost" aria-label="Cost Estimate">
+        <div className="feature reversed">
+          <div className="feature-copy">
+            <div className="feature-index reveal">02 / Cost Estimate</div>
+            <h2 className="feature-headline reveal">Real costs, not rough guesses.</h2>
+            <p className="feature-body reveal">
+              We calculate your estimate from live regional build-cost data, updated every quarter. See exactly where your money goes before you speak to a single builder.
+            </p>
+            <a href="/features" className="feature-link reveal">
+              See sample report
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10m0 0-4-4m4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </a>
+            <ul className="proof-list reveal">
+              <li>Live BCIS regional data</li>
+              <li>Updated quarterly</li>
+              <li>Itemised by trade</li>
+            </ul>
+            <div className="stat-callout reveal">
+              <div className="stat-callout-value">±8%</div>
+              <div className="stat-callout-label">accurate to within 8% of actual quotes</div>
+            </div>
+          </div>
+          <div className="feature-demo" style={{ background: "var(--navy)" }} aria-hidden="true">
+            <CostDemo />
+          </div>
+        </div>
+      </section>
 
-      {/* ── SECTION 4: THE STREET ── */}
-      <StreetSection />
-
-      {/* ── SECTION 5: THE RESULT ── */}
-      <ResultSection />
+      {/* ── FEATURE 03: Neighbour Comparison (dark) ── */}
+      <section className="feature-section dark" id="feat-neighbour" aria-label="Neighbour Comparison">
+        <div className="feature reversed">
+          <div className="feature-demo" style={{ background: "var(--stone)" }} aria-hidden="true">
+            <NeighbourDemo />
+          </div>
+          <div className="feature-copy">
+            <div className="feature-index reveal">03 / Neighbour Comparison</div>
+            <h2 className="feature-headline reveal">See what your street has already built.</h2>
+            <p className="feature-body reveal">
+              We pull planning application data for every house within 100m. You see what your neighbours approved, what they built, and what that means for your application.
+            </p>
+            <a href="/features" className="feature-link reveal">
+              See how we source data
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10m0 0-4-4m4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            </a>
+            <ul className="proof-list reveal">
+              <li>Land Registry data on every neighbour</li>
+              <li>Compares extension size, status, materials</li>
+              <li>Know what your street approved</li>
+            </ul>
+            <div className="stat-callout reveal">
+              <div className="stat-callout-value">3×</div>
+              <div className="stat-callout-label">more likely to succeed with precedent data</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* ── TESTIMONIALS ── */}
       <section className="s-testimonials" aria-label="What homeowners say">
@@ -1058,24 +669,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SECTION 6: SINGLE CTA ── */}
-      <section className="s-cta-section" aria-label="Get started">
-        <div className="s-cta-inner">
-          <h2 className="s-cta-headline">Check your extension potential — free.</h2>
-          <PostcodeForm />
+      {/* ── COUNTER / TRUST ── */}
+      <TrustCounter />
+
+      {/* ── FINAL CTA ── */}
+      <section className="final-cta" aria-label="Get started">
+        <div className="cta-glow" aria-hidden="true" />
+        <h2 className="final-cta-headline reveal">
+          Your home,<br />
+          <em style={{ color: "var(--blue-light)" }}>extended.</em>
+        </h2>
+        <p className="final-cta-sub reveal">Upload a floorplan. Get your report in 10 minutes.</p>
+        <div className="final-cta-actions reveal">
+          <a href="https://app.caniextend.com/proposals" className="btn-gold" style={{ fontSize: 17, padding: "18px 48px" }}>
+            Check your extension potential — free →
+          </a>
+          <p style={{ marginTop: 18, fontSize: 14, color: "rgba(255,255,255,0.38)", letterSpacing: "0.02em", position: "relative", zIndex: 2 }}>
+            No account required. Results in under 10 minutes.
+          </p>
         </div>
       </section>
 
-      {/* ── SECTION 7: FOOTER ── */}
-      <footer className="s-footer" role="contentinfo">
-        <span className="s-footer-logo">caniextend</span>
-        <nav className="s-footer-links" aria-label="Footer navigation">
-          <a href="/privacy">Privacy</a>
-          <span aria-hidden="true">·</span>
-          <a href="/terms">Terms</a>
-          <span aria-hidden="true">·</span>
-          <a href="/contact">Contact</a>
-        </nav>
+      {/* ── FOOTER ── */}
+      <footer className="site-footer" role="contentinfo">
+        <div className="footer-logo">Can I Extend</div>
+        <ul className="footer-links" aria-label="Footer navigation">
+          <li><a href="/privacy">Privacy</a></li>
+          <li><a href="/terms">Terms</a></li>
+          <li><a href="/features">Planning rules</a></li>
+          <li><a href="/contact">Contact</a></li>
+        </ul>
+        <div className="footer-copy">© 2026 Can I Extend Ltd</div>
       </footer>
     </>
   );
