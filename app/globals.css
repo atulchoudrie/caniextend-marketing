@@ -1480,7 +1480,7 @@ body {
   .s-context-text { font-size: 16px; }
 }
 .s-context--upload {
-  top: 32px;
+  top: 64px;
 }
 .s-context-bullets {
   list-style: none;
