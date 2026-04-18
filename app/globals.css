@@ -810,6 +810,46 @@ body {
   .footer-links { flex-wrap: wrap; justify-content: center; }
 }
 
+/* ─── APP SCREENSHOT FRAME ─── */
+.ss-frame {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.08);
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ss-frame.ss-visible { opacity: 1; transform: translateY(0); }
+.ss-chrome {
+  background: #1c2333;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.ss-dots { display: flex; gap: 5px; flex-shrink: 0; }
+.ss-dots span { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.12); }
+.ss-bar { flex: 1; height: 20px; background: rgba(255,255,255,0.06); border-radius: 4px; }
+.ss-frame img { width: 100%; display: block; }
+
+/* ─── SECTION BLEED ─── */
+#feat-planning {
+  background: linear-gradient(to bottom, var(--navy-deep) 0%, var(--navy-deep) calc(100% - 40px), var(--stone) 100%);
+}
+#feat-cost {
+  background: linear-gradient(to bottom, var(--navy-deep) 0%, var(--stone) 40px, var(--stone) calc(100% - 40px), var(--navy-deep) 100%);
+}
+#feat-ai-design {
+  background: linear-gradient(to bottom, var(--stone) 0%, var(--navy-deep) 40px, var(--navy-deep) calc(100% - 40px), var(--stone) 100%);
+}
+#feat-neighbour {
+  background: linear-gradient(to bottom, var(--navy-deep) 0%, var(--stone) 40px, var(--stone) 100%);
+}
+
 /* ─── REDUCED MOTION ─── */
 @media (prefers-reduced-motion: reduce) {
   .reveal {
@@ -830,4 +870,5 @@ body {
   }
   .status-pill { opacity: 1 !important; }
   .scan-line { display: none !important; }
+  .ss-frame { opacity: 1 !important; transform: none !important; transition: none !important; }
 }

@@ -178,6 +178,34 @@ function BlueprintSVG() {
 }
 
 
+/* ── Screenshot Demo ─────────────────────────────────────────────── */
+function ScreenshotDemo({ src, alt }: { src: string; alt: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        el.classList.add("ss-visible");
+      },
+      { threshold: 0.15 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div ref={ref} className="ss-frame">
+      <div className="ss-chrome">
+        <div className="ss-dots"><span /><span /><span /></div>
+        <div className="ss-bar" />
+      </div>
+      <img src={src} alt={alt} loading="lazy" />
+    </div>
+  );
+}
+
 /* ── Planning Demo ─────────────────────────────────────────────────── */
 function PlanningDemo() {
   const ref = useRef<HTMLDivElement>(null);
@@ -638,7 +666,7 @@ export default function Home() {
           </a>
         </div>
         <div className="feature-demo">
-          <PlanningDemo />
+          <ScreenshotDemo src="/brand/screenshot-planning.png" alt="Planning check result — Permitted Development confirmed" />
         </div>
       </section>
 
@@ -654,7 +682,7 @@ export default function Home() {
           </a>
         </div>
         <div className="feature-demo">
-          <CostDemo />
+          <ScreenshotDemo src="/brand/screenshot-cost.png" alt="Cost estimate breakdown with itemised line items" />
         </div>
       </section>
 
@@ -670,14 +698,14 @@ export default function Home() {
           </a>
         </div>
         <div className="feature-demo">
-          <DesignDemo />
+          <ScreenshotDemo src="/brand/screenshot-design.png" alt="AI-generated extension design on house floorplan" />
         </div>
       </section>
 
       {/* FEATURE 04: Neighbour Comparison */}
       <section className="feature light reversed" id="feat-neighbour">
         <div className="feature-demo">
-          <NeighbourDemo />
+          <ScreenshotDemo src="/brand/screenshot-neighbour.png" alt="Neighbour comparison — street silhouette with planning data" />
         </div>
         <div className="feature-copy">
           <h2 className="feature-headline reveal">See what your street already built.</h2>
