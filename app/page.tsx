@@ -540,7 +540,7 @@ function PostcodeForm() {
         />
         {valid && <span className="s-postcode-check" aria-hidden="true">✓</span>}
       </div>
-      <a href={`/proposals${valid ? `?postcode=${encodeURIComponent(value.trim())}` : ""}`} className="s-cta-btn">
+      <a href={`https://app.caniextend.com/proposals${valid ? `?postcode=${encodeURIComponent(value.trim())}` : ""}`} className="s-cta-btn">
         Get started
       </a>
     </div>
@@ -963,7 +963,7 @@ export default function Home() {
           </div>
           <span className="nav-logo-text">Can I Extend</span>
         </a>
-        <a href="/proposals" className="nav-cta">
+        <a href="https://app.caniextend.com/proposals" className="nav-cta">
           Upload your floorplan →
         </a>
       </nav>
@@ -980,7 +980,7 @@ export default function Home() {
             <br />
             <em>become.</em>
           </h1>
-          <a href="/proposals" className="s-cta hero-in">
+          <a href="https://app.caniextend.com/proposals" className="s-cta hero-in">
             Upload your floorplan →
           </a>
         </div>

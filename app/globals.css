@@ -1036,6 +1036,7 @@ body {
 }
 .s-upload-demo {
   width: 100%;
+  min-height: 480px;
 }
 
 /* ── Upload demo component ── */
