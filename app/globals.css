@@ -1375,72 +1375,7 @@ body {
   height: auto;
 }
 
-/* Extension candidate ghost — fades in on active */
-.des-candidate {
-  opacity: 0;
-  transition: opacity 0.6s ease;
-}
-.s-design--active .des-candidate { opacity: 1; }
-
-/* AI cursor */
-.des-cursor {
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-.s-design--active .des-cursor {
-  opacity: 1;
-  transition-delay: 0.6s;
-}
-
-/* Generating label */
-.des-gen-label {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.s-design--active .des-gen-label {
-  opacity: 1;
-  transition-delay: 0.8s;
-}
-
-/* Extension wall draw */
-.des-wall {
-  opacity: 0;
-  transition: opacity 0.1s ease 1.2s;
-}
-.s-design--active .des-wall {
-  opacity: 1;
-  animation: des-draw 1.8s 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-@keyframes des-draw {
-  from { stroke-dashoffset: 364; stroke: #E8FF47; }
-  80%  { stroke-dashoffset: 0;   stroke: #E8FF47; }
-  100% { stroke-dashoffset: 0;   stroke: rgba(245,245,245,0.7); }
-}
-
-/* Extension fill */
-.des-fill {
-  opacity: 0;
-  transition: opacity 0.5s ease;
-}
-.s-design--active .des-fill {
-  opacity: 1;
-  transition-delay: 3.2s;
-}
-
-/* Extension labels */
-.des-label, .des-badge {
-  opacity: 0;
-  transition: opacity 0.4s ease;
-}
-.s-design--active .des-label { opacity: 1; transition-delay: 3.4s; }
-.s-design--active .des-badge { opacity: 1; transition-delay: 3.6s; }
-
-/* Design complete chip */
-.des-chip {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.s-design--active .des-chip { opacity: 1; transition-delay: 4.0s; }
+/* Design section elements — scroll-driven via inline styles */
 
 /* ── Section 4: THE STREET ─── */
 .s-street {
