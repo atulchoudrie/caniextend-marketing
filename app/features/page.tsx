@@ -38,7 +38,7 @@ export default function FeaturesPage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "#0F2240",
+        background: "var(--navy)",
         fontFamily: "var(--font-dm-sans, system-ui, sans-serif)",
         padding: "2rem",
         textAlign: "center",
@@ -47,7 +47,7 @@ export default function FeaturesPage() {
       <a
         href="/"
         style={{
-          color: "#7BAFD4",
+          color: "var(--blue-light)",
           fontSize: "13px",
           fontWeight: 500,
           letterSpacing: "0.08em",
@@ -73,7 +73,7 @@ export default function FeaturesPage() {
       </h1>
       <p style={{ color: "rgba(255,255,255,0.55)", maxWidth: "480px", lineHeight: 1.7 }}>
         Full features page coming soon. In the meantime,{" "}
-        <a href="/#how-it-works" style={{ color: "#7BAFD4", textDecoration: "underline" }}>
+        <a href="/#how-it-works" style={{ color: "var(--blue-light)", textDecoration: "underline" }}>
           see how it works
         </a>
         .

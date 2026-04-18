@@ -316,7 +316,7 @@ body {
 
 .bp-line {
   fill: none;
-  stroke: rgba(122, 180, 212, 0.75);
+  stroke: rgba(123, 175, 212, 0.75);
   stroke-width: 2;
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;

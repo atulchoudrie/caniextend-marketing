@@ -38,7 +38,7 @@ export default function AboutPage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "#0F2240",
+        background: "var(--navy)",
         fontFamily: "var(--font-dm-sans, system-ui, sans-serif)",
         padding: "2rem",
         textAlign: "center",
@@ -47,7 +47,7 @@ export default function AboutPage() {
       <a
         href="/"
         style={{
-          color: "#7BAFD4",
+          color: "var(--blue-light)",
           fontSize: "13px",
           fontWeight: 500,
           letterSpacing: "0.08em",

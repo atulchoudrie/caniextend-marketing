@@ -38,7 +38,7 @@ export default function PricingPage() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        background: "#0F2240",
+        background: "var(--navy)",
         fontFamily: "var(--font-dm-sans, system-ui, sans-serif)",
         padding: "2rem",
         textAlign: "center",
@@ -47,7 +47,7 @@ export default function PricingPage() {
       <a
         href="/"
         style={{
-          color: "#7BAFD4",
+          color: "var(--blue-light)",
           fontSize: "13px",
           fontWeight: 500,
           letterSpacing: "0.08em",
@@ -73,7 +73,7 @@ export default function PricingPage() {
       </h1>
       <p style={{ color: "rgba(255,255,255,0.55)", maxWidth: "480px", lineHeight: 1.7 }}>
         Pricing details coming soon. Join the{" "}
-        <a href="/#waitlist" style={{ color: "#7BAFD4", textDecoration: "underline" }}>
+        <a href="/#waitlist" style={{ color: "var(--blue-light)", textDecoration: "underline" }}>
           early access waitlist
         </a>{" "}
         for founding member rates.

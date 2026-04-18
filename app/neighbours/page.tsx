@@ -65,7 +65,7 @@ const EXTENSION_TYPE_LABEL: Record<string, string> = {
 const APPROVAL_COLOUR: Record<string, string> = {
   approved: "#1A7F5A",
   refused: "#B45309",
-  pending: "#4A7FA5",
+  pending: "var(--blue)",
 };
 
 const APPROVAL_LABEL: Record<string, string> = {
@@ -122,7 +122,7 @@ function StatCard({
         style={{
           fontSize: "clamp(22px, 4vw, 32px)",
           fontFamily: "var(--font-dm-serif, Georgia, serif)",
-          color: "#7BAFD4",
+          color: "var(--blue-light)",
           letterSpacing: "-0.02em",
           lineHeight: 1.1,
         }}
@@ -250,7 +250,7 @@ function NeighbourCard({ property }: { property: NeighbourProperty }) {
               Ref:{" "}
               <strong
                 style={{
-                  color: "#7BAFD4",
+                  color: "var(--blue-light)",
                   fontFamily: "monospace",
                   fontSize: 12,
                 }}
@@ -392,7 +392,7 @@ export default function NeighboursPage() {
       <main
         style={{
           minHeight: "100vh",
-          background: "#0F2240",
+          background: "var(--navy)",
           fontFamily: "var(--font-dm-sans, system-ui, sans-serif)",
           color: "#ffffff",
         }}
@@ -411,7 +411,7 @@ export default function NeighboursPage() {
           <a
             href="/"
             style={{
-              color: "#7BAFD4",
+              color: "var(--blue-light)",
               fontSize: 13,
               fontWeight: 500,
               letterSpacing: "0.08em",
@@ -507,7 +507,7 @@ export default function NeighboursPage() {
                     letterSpacing: "0.04em",
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = "#4A7FA5";
+                    e.target.style.borderColor = "var(--blue)";
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = postcodeError
@@ -721,7 +721,7 @@ export default function NeighboursPage() {
                     fontSize: 12,
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",
-                    color: "#7BAFD4",
+                    color: "var(--blue-light)",
                     fontWeight: 600,
                     marginBottom: 6,
                   }}
@@ -775,7 +775,7 @@ export default function NeighboursPage() {
                     fontSize: 12,
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",
-                    color: "#7BAFD4",
+                    color: "var(--blue-light)",
                     fontWeight: 600,
                     marginBottom: 12,
                   }}
@@ -803,7 +803,7 @@ export default function NeighboursPage() {
                     fontSize: 12,
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",
-                    color: "#7BAFD4",
+                    color: "var(--blue-light)",
                     fontWeight: 600,
                     marginBottom: 16,
                   }}
@@ -853,7 +853,7 @@ export default function NeighboursPage() {
                     fontSize: 12,
                     letterSpacing: "0.1em",
                     textTransform: "uppercase",
-                    color: "#7BAFD4",
+                    color: "var(--blue-light)",
                     fontWeight: 600,
                     marginBottom: 16,
                   }}
