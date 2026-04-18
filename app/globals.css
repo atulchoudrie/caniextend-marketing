@@ -1300,7 +1300,7 @@ body {
 
 /* shared label token */
 :root {
-  --bg-primary: #080808;
+  --bg-primary: var(--navy-deep);
   --accent:     #E8FF47;
   --txt-1:      #F5F5F5;
   --txt-2:      #8A8A8A;
@@ -1544,7 +1544,7 @@ body {
   width: min(520px, calc(100vw - 48px));
 }
 .rc-card {
-  background: #111111;
+  background: var(--navy-mid);
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 8px;
   padding: 24px;

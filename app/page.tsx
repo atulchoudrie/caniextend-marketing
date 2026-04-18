@@ -922,7 +922,7 @@ function ResultSection() {
           <p className="rc-header">Your Design</p>
           <div className="rc-plan-thumb" aria-hidden="true">
             <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
-              <rect width="200" height="120" fill="#111111"/>
+              <rect width="200" height="120" fill="#162E52"/>
               <rect x="10" y="10" width="90" height="60" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
               <rect x="100" y="10" width="60" height="34" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
               <rect x="100" y="44" width="60" height="36" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
