@@ -1095,6 +1095,14 @@ body {
   color: rgba(255,255,255,0.38);
   margin: 2px 0 0;
 }
+.s-credibility-line {
+  font-size: 15px;
+  color: rgba(255,255,255,0.45);
+  text-align: center;
+  max-width: 640px;
+  margin: 32px auto 0;
+  letter-spacing: 0.01em;
+}
 @media (max-width: 768px) {
   .s-testimonials-grid { grid-template-columns: 1fr; }
   .s-trust-inner { gap: 24px; }

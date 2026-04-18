@@ -1054,6 +1054,7 @@ export default function Home() {
               </div>
             </article>
           </div>
+          <p className="s-credibility-line">No architect needed. No waiting weeks. Cost estimates based on RICS regional data, updated quarterly.</p>
         </div>
       </section>
 
