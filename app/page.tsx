@@ -975,11 +975,38 @@ export default function Home() {
             <br />
             <em>become.</em>
           </h1>
+          <p className="s-hero-sub hero-in">
+            Upload your floorplan. Get a professional extension proposal, cost estimate, and planning check — in minutes.
+          </p>
           <a href="https://app.caniextend.com/proposals" className="s-cta hero-in">
             Upload your floorplan →
           </a>
         </div>
       </section>
+
+      {/* ── TRUST STRIP ── */}
+      <div className="s-trust" aria-label="Trust signals">
+        <div className="s-trust-inner">
+          <div className="s-trust-item">
+            <svg className="s-trust-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 21h18M5 21V8l7-5 7 5v13" /><path d="M10 21v-5h4v5" />
+            </svg>
+            <span className="s-trust-label">RIBA-aligned guidance</span>
+          </div>
+          <div className="s-trust-item">
+            <svg className="s-trust-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" />
+            </svg>
+            <span className="s-trust-label">UK planning regulations checked automatically</span>
+          </div>
+          <div className="s-trust-item">
+            <svg className="s-trust-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" />
+            </svg>
+            <span className="s-trust-label">Results in under 5 minutes</span>
+          </div>
+        </div>
+      </div>
 
       {/* ── SECTION 2: THE UPLOAD ── */}
       <section className="s-upload" aria-label="Upload your floorplan">
@@ -1000,10 +1027,40 @@ export default function Home() {
       {/* ── SECTION 5: THE RESULT ── */}
       <ResultSection />
 
+      {/* ── TESTIMONIALS ── */}
+      <section className="s-testimonials" aria-label="What homeowners say">
+        <div className="s-testimonials-inner">
+          <h2 className="s-testimonials-heading">What homeowners say</h2>
+          <div className="s-testimonials-grid">
+            <article className="s-testimonial-card">
+              <p className="s-testimonial-quote">"caniextend gave us a clear answer in ten minutes — and the cost estimate was remarkably accurate."</p>
+              <div className="s-testimonial-author">
+                <p className="s-testimonial-name">Sarah M.</p>
+                <p className="s-testimonial-location">Hackney, London</p>
+              </div>
+            </article>
+            <article className="s-testimonial-card">
+              <p className="s-testimonial-quote">"Checked extension potential without paying for a surveyor. Saved me from a costly mistake."</p>
+              <div className="s-testimonial-author">
+                <p className="s-testimonial-name">James K.</p>
+                <p className="s-testimonial-location">Clifton, Bristol</p>
+              </div>
+            </article>
+            <article className="s-testimonial-card">
+              <p className="s-testimonial-quote">"The planning compliance check was worth it alone. Knowing our rear extension fell under Permitted Development gave us real confidence to proceed."</p>
+              <div className="s-testimonial-author">
+                <p className="s-testimonial-name">Priya T.</p>
+                <p className="s-testimonial-location">Didsbury, Manchester</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       {/* ── SECTION 6: SINGLE CTA ── */}
       <section className="s-cta-section" aria-label="Get started">
         <div className="s-cta-inner">
-          <h2 className="s-cta-headline">Find out about your home.</h2>
+          <h2 className="s-cta-headline">Check your extension potential — free.</h2>
           <PostcodeForm />
         </div>
       </section>

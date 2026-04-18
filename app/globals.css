@@ -996,6 +996,109 @@ body {
   transform: none;
 }
 .hero-in:nth-child(2) { transition-delay: 0.14s; }
+.hero-in:nth-child(3) { transition-delay: 0.28s; }
+
+/* ── Hero sub-headline ── */
+.s-hero-sub {
+  font-size: clamp(16px, 1.8vw, 20px);
+  color: rgba(255,255,255,0.60);
+  line-height: 1.55;
+  max-width: 560px;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+/* ── Trust strip ── */
+.s-trust {
+  background: var(--navy-deep);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding: 28px 24px;
+}
+.s-trust-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+}
+.s-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.s-trust-icon {
+  flex-shrink: 0;
+  color: var(--blue-light);
+}
+.s-trust-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.60);
+  letter-spacing: 0.01em;
+}
+
+/* ── Testimonials section ── */
+.s-testimonials {
+  background: var(--navy-deep);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 100px 24px;
+}
+.s-testimonials-inner {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+.s-testimonials-heading {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 3.5vw, 42px);
+  color: var(--white);
+  text-align: center;
+  margin-bottom: 56px;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.s-testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.s-testimonial-card {
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.s-testimonial-quote {
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(255,255,255,0.72);
+  font-style: italic;
+  flex: 1;
+}
+.s-testimonial-author {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 16px;
+}
+.s-testimonial-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  margin: 0;
+}
+.s-testimonial-location {
+  font-size: 13px;
+  color: rgba(255,255,255,0.38);
+  margin: 2px 0 0;
+}
+@media (max-width: 768px) {
+  .s-testimonials-grid { grid-template-columns: 1fr; }
+  .s-trust-inner { gap: 24px; }
+}
 
 /* ── Upload section ── */
 .s-upload {
