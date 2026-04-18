@@ -320,7 +320,7 @@ export default function Home() {
       <section className="feature dark" id="feat-ai-design">
         <div className="feature-copy">
           <div className="feature-index reveal">03 / AI Design</div>
-          <h2 className="feature-headline reveal reveal-delay-1">Your extension, designed by AI</h2>
+          <h2 className="feature-headline reveal reveal-delay-1">Your extension, designed by AI, and by you</h2>
           <p className="feature-body reveal reveal-delay-2">
             Our AI analyses your floor plan and proposes the optimal extension layout — maximising usable space while staying within permitted development limits. Full architectural drawings included in every report.
           </p>
