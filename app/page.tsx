@@ -653,7 +653,7 @@ export default function Home() {
             </a>
           </div>
           <div className="feature-demo">
-            <PlanningDemo />
+            <ScreenshotDemo src="/brand/feature-planning-v2.png" alt="Planning check result — Permitted Development confirmed" />
           </div>
         </div>
       </section>
@@ -671,7 +671,7 @@ export default function Home() {
             </a>
           </div>
           <div className="feature-demo" style={{ background: "var(--navy-mid)" }}>
-            <CostDemo />
+            <ScreenshotDemo src="/brand/screenshot-cost.png" alt="Cost breakdown — itemised build cost estimate" />
           </div>
         </div>
       </section>
@@ -698,7 +698,7 @@ export default function Home() {
       <section className="feature-section light" id="feat-neighbour">
         <div className="feature reversed">
           <div className="feature-demo">
-            <NeighbourDemo />
+            <ScreenshotDemo src="/brand/feature-neighbour-v2.png" alt="Neighbour comparison — street view with extension data" />
           </div>
           <div className="feature-copy">
             <h2 className="feature-headline reveal">See what your street already built.</h2>
