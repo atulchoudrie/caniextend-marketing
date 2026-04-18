@@ -15,20 +15,23 @@ function useInView(threshold = 0.3) {
   return { ref, inView };
 }
 
-function useScrollProgress() {
-  const ref = useRef<HTMLElement>(null);
-  const [progress, setProgress] = useState(0);
+// Calls onProgress via rAF on every scroll tick — no React state, no re-renders.
+function useScrollProgress(
+  sectionRef: React.RefObject<HTMLElement | null>,
+  onProgress: (p: number) => void
+): void {
+  const cbRef = useRef(onProgress);
+  cbRef.current = onProgress;
+
   useEffect(() => {
-    const el = ref.current;
+    const el = sectionRef.current;
     if (!el) return;
     let ticking = false;
     const update = () => {
       const rect = el.getBoundingClientRect();
       const vh = window.innerHeight;
-      const start = vh;
-      const end = -rect.height;
-      const raw = (start - rect.top) / (start - end);
-      setProgress(Math.max(0, Math.min(1, raw)));
+      const raw = (vh - rect.top) / (vh + rect.height);
+      cbRef.current(Math.max(0, Math.min(1, raw)));
       ticking = false;
     };
     const onScroll = () => {
@@ -37,8 +40,9 @@ function useScrollProgress() {
     window.addEventListener("scroll", onScroll, { passive: true });
     update();
     return () => window.removeEventListener("scroll", onScroll);
+  // Ref object is stable — safe to omit from deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  return { ref, progress };
 }
 
 type UploadPhase = "idle" | "dragging" | "dropped" | "processing" | "scanning" | "detecting" | "complete";
@@ -545,19 +549,76 @@ function PostcodeForm() {
 
 // ── Section 3: THE DESIGN ─────────────────────────────────────
 function DesignSection() {
-  const { ref, progress } = useScrollProgress();
-  const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
-  const active = p > 0;
-  const wallOffset = Math.max(0, 364 - 364 * Math.min(1, Math.max(0, (p - 0.15) / 0.35)));
-  const wallColor = p > 0.5 ? `rgba(245,245,245,${0.2 + 0.5 * Math.min(1, (p - 0.5) / 0.2)})` : "#E8FF47";
+  const sectionRef = useRef<HTMLElement>(null);
+  const contextRef = useRef<HTMLDivElement>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useScrollProgress(sectionRef, (progress) => {
+    const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
+
+    // Context text: slides in as section enters viewport
+    if (contextRef.current) {
+      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.15));
+      contextRef.current.style.opacity = String(ct);
+      contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
+    }
+
+    // Active class — only changes once
+    sectionRef.current?.classList.toggle("s-design--active", p > 0);
+
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const candidate = svg.querySelector<SVGElement>(".des-candidate");
+    if (candidate) candidate.style.opacity = p > 0.05 ? "1" : "0";
+
+    const wall = svg.querySelector<SVGPathElement>(".des-wall");
+    if (wall) {
+      const wallOffset = Math.max(0, 364 - 364 * Math.min(1, Math.max(0, (p - 0.15) / 0.35)));
+      const wallColor = p > 0.5
+        ? `rgba(245,245,245,${(0.2 + 0.5 * Math.min(1, (p - 0.5) / 0.2)).toFixed(2)})`
+        : "#E8FF47";
+      wall.style.strokeDashoffset = String(wallOffset);
+      wall.style.stroke = wallColor;
+      wall.style.opacity = p > 0.15 ? "1" : "0";
+    }
+
+    const fill = svg.querySelector<SVGElement>(".des-fill");
+    if (fill) fill.style.opacity = p > 0.55 ? "1" : "0";
+
+    const extLabel = svg.querySelector<SVGElement>(".des-ext-label");
+    if (extLabel) extLabel.style.opacity = p > 0.6 ? "1" : "0";
+
+    const sizeLabel = svg.querySelector<SVGElement>(".des-size-label");
+    if (sizeLabel) sizeLabel.style.opacity = p > 0.65 ? "1" : "0";
+
+    const crosshair = svg.querySelector<SVGElement>(".des-crosshair");
+    if (crosshair) crosshair.style.opacity = p > 0.08 ? "1" : "0";
+
+    const genLabel = svg.querySelector<SVGElement>(".des-gen-label");
+    if (genLabel) genLabel.style.opacity = p > 0.1 && p < 0.75 ? "1" : "0";
+
+    const badge = svg.querySelector<SVGElement>(".des-badge");
+    if (badge) badge.style.opacity = p > 0.75 ? "1" : "0";
+  });
 
   return (
-    <section ref={ref as React.RefObject<HTMLElement>} className={`s-design${active ? " s-design--active" : ""}`} aria-label="The Design">
-      <div className="s-context">
+    <section
+      ref={sectionRef as React.RefObject<HTMLElement>}
+      className="s-design"
+      aria-label="The Design"
+    >
+      <div ref={contextRef} className="s-context">
         <p className="s-context-step">Step 1</p>
         <p className="s-context-text">Our AI designs your extension — optimised for your floorplan, within permitted development limits.</p>
       </div>
-      <svg className="s-design-svg" viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <svg
+        ref={svgRef}
+        className="s-design-svg"
+        viewBox="0 0 300 280"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
         <defs>
           <pattern id="dg" width="12" height="12" patternUnits="userSpaceOnUse">
             <path d="M 12 0 L 0 0 0 12" fill="none" stroke="rgba(232,255,71,0.04)" strokeWidth="0.5"/>
@@ -569,30 +630,78 @@ function DesignSection() {
         </defs>
         <rect width="300" height="280" fill="url(#dg)"/>
 
+        {/* Existing rooms */}
         <rect x="20" y="20" width="140" height="96" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
         <rect x="160" y="20" width="100" height="56" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
         <rect x="160" y="76" width="100" height="60" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
         <rect x="20" y="116" width="140" height="80" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
 
-        <rect className="des-candidate" x="30" y="196" width="120" height="58" fill="rgba(232,255,71,0.04)" stroke="rgba(232,255,71,0.15)" strokeWidth="1" strokeDasharray="5 4" style={{ opacity: p > 0.05 ? 1 : 0 }}/>
+        {/* Candidate area (dashed outline) — opacity driven by scroll */}
+        <rect
+          className="des-candidate"
+          x="30" y="196" width="120" height="58"
+          fill="rgba(232,255,71,0.04)" stroke="rgba(232,255,71,0.15)"
+          strokeWidth="1" strokeDasharray="5 4"
+          style={{ opacity: 0 }}
+        />
 
-        <path d="M 30 196 L 30 254 L 150 254 L 150 196" fill="none" stroke={wallColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="364" strokeDashoffset={wallOffset} style={{ opacity: p > 0.15 ? 1 : 0, transition: "opacity 0.2s" }}/>
+        {/* Animated wall perimeter */}
+        <path
+          className="des-wall"
+          d="M 30 196 L 30 254 L 150 254 L 150 196"
+          fill="none" stroke="#E8FF47" strokeWidth="2"
+          strokeLinecap="round" strokeLinejoin="round"
+          strokeDasharray="364" strokeDashoffset="364"
+          style={{ opacity: 0, transition: "opacity 0.2s" }}
+        />
 
-        <rect className="des-fill" x="31" y="197" width="118" height="56" fill="rgba(232,255,71,0.06)" style={{ opacity: p > 0.55 ? 1 : 0, transition: "opacity 0.3s" }}/>
+        {/* Fill */}
+        <rect
+          className="des-fill"
+          x="31" y="197" width="118" height="56"
+          fill="rgba(232,255,71,0.06)"
+          style={{ opacity: 0, transition: "opacity 0.3s" }}
+        />
 
-        <text x="90" y="230" textAnchor="middle" fill="#8A8A8A" fontFamily="DM Sans,sans-serif" fontSize="9" letterSpacing="0.04em" style={{ opacity: p > 0.6 ? 1 : 0, transition: "opacity 0.3s" }}>Extension — 4.2m × 5.8m</text>
-        <text x="90" y="248" textAnchor="middle" fill="#F5F5F5" fontFamily="DM Sans,sans-serif" fontSize="8" fontWeight="600" style={{ opacity: p > 0.65 ? 1 : 0, transition: "opacity 0.3s" }}>24.4 m²</text>
+        {/* Extension label */}
+        <text
+          className="des-ext-label"
+          x="90" y="230" textAnchor="middle"
+          fill="#8A8A8A" fontFamily="DM Sans,sans-serif"
+          fontSize="9" letterSpacing="0.04em"
+          style={{ opacity: 0, transition: "opacity 0.3s" }}
+        >Extension — 4.2m × 5.8m</text>
 
-        <g style={{ opacity: p > 0.08 ? 1 : 0, transition: "opacity 0.3s" }}>
+        {/* Size label */}
+        <text
+          className="des-size-label"
+          x="90" y="248" textAnchor="middle"
+          fill="#F5F5F5" fontFamily="DM Sans,sans-serif"
+          fontSize="8" fontWeight="600"
+          style={{ opacity: 0, transition: "opacity 0.3s" }}
+        >24.4 m²</text>
+
+        {/* Crosshair */}
+        <g className="des-crosshair" style={{ opacity: 0, transition: "opacity 0.3s" }}>
           <line x1="86" y1="196" x2="94" y2="196" stroke="#E8FF47" strokeWidth="1.5"/>
           <line x1="90" y1="192" x2="90" y2="200" stroke="#E8FF47" strokeWidth="1.5"/>
           <circle cx="90" cy="196" r="3" fill="none" stroke="#E8FF47" strokeWidth="1"/>
         </g>
 
-        <text x="24" y="17" fill="#8A8A8A" fontFamily="DM Sans,sans-serif" fontSize="9" style={{ opacity: p > 0.1 && p < 0.75 ? 1 : 0, transition: "opacity 0.3s" }}>Generating extension…</text>
+        {/* Generating label */}
+        <text
+          className="des-gen-label"
+          x="24" y="17" fill="#8A8A8A"
+          fontFamily="DM Sans,sans-serif" fontSize="9"
+          style={{ opacity: 0, transition: "opacity 0.3s" }}
+        >Generating extension…</text>
 
-        <rect x="196" y="14" width="92" height="20" rx="10" fill="rgba(255,255,255,0.08)" style={{ opacity: p > 0.75 ? 1 : 0, transition: "opacity 0.3s" }}/>
-        <text x="242" y="27" textAnchor="middle" fill="#F5F5F5" fontFamily="DM Sans,sans-serif" fontSize="9" fontWeight="500" style={{ opacity: p > 0.75 ? 1 : 0, transition: "opacity 0.3s" }}>Design complete</text>
+        {/* Badge */}
+        <g className="des-badge" style={{ opacity: 0, transition: "opacity 0.3s" }}>
+          <rect x="196" y="14" width="92" height="20" rx="10" fill="rgba(255,255,255,0.08)"/>
+          <text x="242" y="27" textAnchor="middle" fill="#F5F5F5"
+            fontFamily="DM Sans,sans-serif" fontSize="9" fontWeight="500">Design complete</text>
+        </g>
       </svg>
 
       <p className="s-section-label s-section-label--bl">The Design</p>
@@ -601,36 +710,83 @@ function DesignSection() {
 }
 
 // ── Section 4: THE STREET ─────────────────────────────────────
+const STREET_HOUSES: { h: number; ext: boolean; yours?: boolean }[] = [
+  { h: 52, ext: false }, { h: 60, ext: true },  { h: 48, ext: false },
+  { h: 58, ext: true },  { h: 72, ext: false, yours: true },
+  { h: 55, ext: true },  { h: 50, ext: false }, { h: 62, ext: true },
+  { h: 46, ext: false },
+];
+
 function StreetSection() {
-  const { ref, progress } = useScrollProgress();
-  const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
+  const sectionRef = useRef<HTMLElement>(null);
+  const contextRef = useRef<HTMLDivElement>(null);
+  const housesRef = useRef<HTMLDivElement>(null);
 
-  const visibleCount = Math.min(9, Math.floor(p * 9 / 0.3));
-  const visible = Array.from({ length: visibleCount }, (_, i) => i);
-  const showDots = p > 0.35;
-  const showStats = p > 0.55;
-  const showFootnote = p > 0.7;
+  const [showDots, setShowDots] = useState(false);
+  const [showStats, setShowStats] = useState(false);
+  const [showFootnote, setShowFootnote] = useState(false);
 
-  const houses = [
-    { h: 52, ext: false }, { h: 60, ext: true },  { h: 48, ext: false },
-    { h: 58, ext: true },  { h: 72, ext: false, yours: true },
-    { h: 55, ext: true },  { h: 50, ext: false }, { h: 62, ext: true },
-    { h: 46, ext: false },
-  ];
+  // Threshold tracking — only setState when value actually flips
+  const prevRef = useRef({ dots: false, stats: false, footnote: false, visibleCount: -1 });
+
+  useScrollProgress(sectionRef, (progress) => {
+    const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
+
+    // Context text
+    if (contextRef.current) {
+      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.15));
+      contextRef.current.style.opacity = String(ct);
+      contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
+    }
+
+    // Houses — direct DOM class toggle, no re-render
+    const newVisibleCount = Math.min(9, Math.floor(p * 9 / 0.3));
+    if (newVisibleCount !== prevRef.current.visibleCount) {
+      prevRef.current.visibleCount = newVisibleCount;
+      const houseEls = housesRef.current?.children;
+      if (houseEls) {
+        for (let i = 0; i < houseEls.length; i++) {
+          (houseEls[i] as HTMLElement).classList.toggle("st-house--vis", i < newVisibleCount);
+        }
+      }
+    }
+
+    // Threshold booleans — setState only when they flip
+    const newDots = p > 0.35;
+    if (newDots !== prevRef.current.dots) {
+      prevRef.current.dots = newDots;
+      setShowDots(newDots);
+    }
+
+    const newStats = p > 0.55;
+    if (newStats !== prevRef.current.stats) {
+      prevRef.current.stats = newStats;
+      setShowStats(newStats);
+    }
+
+    const newFootnote = p > 0.7;
+    if (newFootnote !== prevRef.current.footnote) {
+      prevRef.current.footnote = newFootnote;
+      setShowFootnote(newFootnote);
+    }
+  });
 
   return (
-    <section ref={ref as React.RefObject<HTMLElement>} className="s-street" aria-label="The Street">
-      <div className="s-context">
+    <section ref={sectionRef as React.RefObject<HTMLElement>} className="s-street" aria-label="The Street">
+      <div ref={contextRef} className="s-context">
         <p className="s-context-step">Step 2</p>
         <p className="s-context-text">See which neighbours have extended, what they built, and whether they got approval.</p>
       </div>
       <div className="s-street-inner">
         <div className="s-street-scene" aria-hidden="true">
           <div className="st-ground"/>
-          <div className="st-houses">
-            {houses.map((h, i) => (
-              <div key={i} className={`st-house${visible.includes(i) ? " st-house--vis" : ""}${h.yours ? " st-house--yours" : ""}`}
-                   style={{ transitionDelay: `${i * 50}ms` }}>
+          <div ref={housesRef} className="st-houses">
+            {STREET_HOUSES.map((h, i) => (
+              <div
+                key={i}
+                className={`st-house${h.yours ? " st-house--yours" : ""}`}
+                style={{ transitionDelay: `${i * 50}ms` }}
+              >
                 {h.ext && showDots && <span className="st-dot st-dot--ext"/>}
                 {!h.ext && showDots && <span className="st-dot st-dot--none"/>}
                 <div className="st-roof" style={{ borderBottomWidth: `${Math.round(h.h * 0.35)}px` }}/>
@@ -664,53 +820,105 @@ function StreetSection() {
 
 // ── Section 5: THE RESULT ─────────────────────────────────────
 function ResultSection() {
-  const { ref, progress } = useScrollProgress();
-  const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
+  const sectionRef = useRef<HTMLElement>(null);
+  const contextRef = useRef<HTMLDivElement>(null);
+  const card1Ref = useRef<HTMLDivElement>(null);
+  const card2Ref = useRef<HTMLDivElement>(null);
+  const card3Ref = useRef<HTMLDivElement>(null);
+  const checksRef = useRef<HTMLUListElement>(null);
+  const costRef = useRef<HTMLParagraphElement>(null);
+  const barFillRef = useRef<HTMLDivElement>(null);
 
-  const showCard1 = p > 0.1;
-  const checkCount = Math.min(3, Math.floor(Math.max(0, p - 0.12) / 0.06));
-  const items = Array.from({ length: checkCount }, (_, i) => i);
-  const showCard2 = p > 0.35;
-  const costProgress = Math.max(0, Math.min(1, (p - 0.35) / 0.2));
-  const count = Math.round(42500 * (1 - Math.pow(1 - costProgress, 3)));
-  const showCard3 = p > 0.6;
-  const showGlow = p > 0.75;
+  const [showBadge, setShowBadge] = useState(false);
+  const prevBadgeRef = useRef(false);
+
+  useScrollProgress(sectionRef, (progress) => {
+    const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
+
+    // Context text
+    if (contextRef.current) {
+      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.15));
+      contextRef.current.style.opacity = String(ct);
+      contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
+    }
+
+    const showCard1 = p > 0.1;
+    const showCard2 = p > 0.35;
+    const showCard3 = p > 0.6;
+    const showGlow = p > 0.75;
+    const checkCount = Math.min(3, Math.floor(Math.max(0, p - 0.12) / 0.06));
+
+    // Cards — direct class toggle, no re-render
+    card1Ref.current?.classList.toggle("rc-card--vis", showCard1);
+    card1Ref.current?.classList.toggle("rc-card--glow", showGlow);
+    card2Ref.current?.classList.toggle("rc-card--vis", showCard2);
+    card2Ref.current?.classList.toggle("rc-card--glow", showGlow);
+    card3Ref.current?.classList.toggle("rc-card--vis", showCard3);
+    card3Ref.current?.classList.toggle("rc-card--glow", showGlow);
+
+    // Check items — direct class toggle
+    const checks = checksRef.current?.children;
+    if (checks) {
+      for (let i = 0; i < checks.length; i++) {
+        (checks[i] as HTMLElement).classList.toggle("rc-check--vis", i < checkCount);
+      }
+    }
+
+    // Cost counter — direct text update
+    if (costRef.current) {
+      const costProgress = Math.max(0, Math.min(1, (p - 0.35) / 0.2));
+      const count = Math.round(42500 * (1 - Math.pow(1 - costProgress, 3)));
+      costRef.current.textContent = `£${count.toLocaleString("en-GB")}`;
+    }
+
+    // Bar fill — direct style update
+    if (barFillRef.current) {
+      barFillRef.current.style.width = showCard2 ? "52%" : "0";
+    }
+
+    // Badge — setState only when it flips (single re-render)
+    const newBadge = checkCount >= 3;
+    if (newBadge !== prevBadgeRef.current) {
+      prevBadgeRef.current = newBadge;
+      setShowBadge(newBadge);
+    }
+  });
 
   return (
-    <section ref={ref as React.RefObject<HTMLElement>} className="s-result" aria-label="The Result">
-      <div className="s-context">
+    <section ref={sectionRef as React.RefObject<HTMLElement>} className="s-result" aria-label="The Result">
+      <div ref={contextRef} className="s-context">
         <p className="s-context-step">Step 3</p>
         <p className="s-context-text">Get your planning check, cost estimate, and full extension design — all in one report.</p>
       </div>
       <div className="s-result-inner">
-        <div className={`rc-card${showCard1 ? " rc-card--vis" : ""}${showGlow ? " rc-card--glow" : ""}`}>
+        <div ref={card1Ref} className="rc-card">
           <p className="rc-header">Planning Check</p>
-          <ul className="rc-checks">
+          <ul ref={checksRef} className="rc-checks">
             {[
-              "Permitted Development ✓",
-              "Rear extension — 4m permitted ✓",
-              "No Article 4 restrictions ✓",
+              "Permitted Development",
+              "Rear extension — 4m permitted",
+              "No Article 4 restrictions",
             ].map((txt, i) => (
-              <li key={i} className={`rc-check${items.includes(i) ? " rc-check--vis" : ""}`} style={{ transitionDelay: `${i * 80}ms` }}>
-                <span className="rc-tick">✓</span> {txt.replace(" ✓", "")}
+              <li key={i} className="rc-check" style={{ transitionDelay: `${i * 80}ms` }}>
+                <span className="rc-tick">✓</span> {txt}
               </li>
             ))}
           </ul>
-          {checkCount === 3 && (
+          {showBadge && (
             <span className="rc-badge">Permitted Development</span>
           )}
         </div>
 
-        <div className={`rc-card${showCard2 ? " rc-card--vis" : ""}${showGlow ? " rc-card--glow" : ""}`} style={{ transitionDelay: "0.15s" }}>
+        <div ref={card2Ref} className="rc-card" style={{ transitionDelay: "0.15s" }}>
           <p className="rc-header">Cost Estimate</p>
-          <p className="rc-cost">£{count.toLocaleString("en-GB")}</p>
+          <p ref={costRef} className="rc-cost">£0</p>
           <p className="rc-cost-sub">Typical build for 24.4 m² rear extension</p>
           <div className="rc-bar-track">
-            <div className="rc-bar-fill" style={{ width: showCard2 ? "52%" : "0" }}/>
+            <div ref={barFillRef} className="rc-bar-fill" style={{ width: "0" }}/>
           </div>
         </div>
 
-        <div className={`rc-card${showCard3 ? " rc-card--vis" : ""}${showGlow ? " rc-card--glow" : ""}`} style={{ transitionDelay: "0.3s" }}>
+        <div ref={card3Ref} className="rc-card" style={{ transitionDelay: "0.3s" }}>
           <p className="rc-header">Your Design</p>
           <div className="rc-plan-thumb" aria-hidden="true">
             <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">

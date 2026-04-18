@@ -1328,6 +1328,11 @@ body {
   left: 48px;
   right: 48px;
   text-align: left;
+  opacity: 0;
+  transform: translateY(14px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .s-context { opacity: 1 !important; transform: none !important; }
 }
 .s-context-step {
   font-size: 11px;
@@ -1347,7 +1352,7 @@ body {
   background: var(--accent, rgba(232,255,71,0.35));
 }
 .s-context-text {
-  font-family: var(--font-display, 'DM Serif Display', serif);
+  font-family: var(--font-sans);
   font-size: clamp(18px, 2.5vw, 24px);
   color: rgba(245,245,245,0.6);
   line-height: 1.4;
