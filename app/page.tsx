@@ -632,20 +632,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HERO PRODUCT SCENE */}
-      <div style={{ background: "var(--navy-deep)", padding: "0 2rem 5rem", textAlign: "center" }}>
-        <div style={{ maxWidth: "900px", margin: "0 auto" }}>
-          <img
-            src="/brand/hero-product-scene.png"
-            alt="Can I Extend — your extension report on screen"
-            width={1400}
-            height={900}
-            loading="eager"
-            style={{ width: "100%", borderRadius: "12px", boxShadow: "0 32px 80px rgba(0,0,0,0.4)" }}
-          />
-        </div>
-      </div>
-
       {/* STATEMENT */}
       <div className="statement">
         <div className="statement-number">10</div>
