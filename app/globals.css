@@ -1442,10 +1442,12 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
+  opacity: 0;
   transition: opacity 0.3s ease;
 }
 .st-dot--ext  { background: var(--accent); }
 .st-dot--none { background: rgba(255,255,255,0.25); }
+.st-dots-vis .st-dot { opacity: 1; }
 .st-roof {
   width: 0;
   height: 0;
@@ -1479,7 +1481,6 @@ body {
   position: absolute;
   top: -32px;
   left: 50%;
-  transform: translateX(-50%);
   white-space: nowrap;
   font-size: 10px;
   font-family: "DM Sans", monospace;
@@ -1488,18 +1489,23 @@ body {
   border: 1px solid rgba(255,255,255,0.1);
   padding: 3px 8px;
   border-radius: 4px;
-  animation: tt-in 0.3s ease both;
   pointer-events: none;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
-@keyframes tt-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+.st-dots-vis .st-tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 .st-stats {
   display: flex;
   gap: 48px;
-  animation: fade-up 0.5s ease both;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
+.st-stats--vis { opacity: 1; transform: none; }
 .st-stat { text-align: center; }
 .st-stat-val {
   display: block;
@@ -1517,12 +1523,11 @@ body {
   font-size: 11px;
   color: var(--txt-2);
   font-style: italic;
-  animation: fade-up 0.4s ease both;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.4s ease 0.1s, transform 0.4s ease 0.1s;
 }
-@keyframes fade-up {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
-}
+.st-footnote--vis { opacity: 1; transform: none; }
 @media (max-width: 640px) {
   .st-houses { gap: 4px; }
   .st-house { max-width: 36px; }
@@ -1589,7 +1594,10 @@ body {
   color: var(--accent);
   padding: 4px 12px;
   border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
+.rc-badge--vis { opacity: 1; }
 .rc-cost {
   font-size: clamp(32px, 5vw, 44px);
   font-weight: 700;
@@ -1753,6 +1761,10 @@ body {
   .rc-card { opacity: 1 !important; transform: none !important; transition: none !important; }
   .rc-check { opacity: 1 !important; transform: none !important; transition: none !important; }
   .rc-bar-fill { transition: none !important; width: 52% !important; }
+  .rc-badge { opacity: 1 !important; transition: none !important; }
   .st-house { opacity: 1 !important; transform: none !important; transition: none !important; }
-  .st-stats, .st-footnote { animation: none !important; opacity: 1 !important; }
+  .st-dot { opacity: 1 !important; transition: none !important; }
+  .st-tooltip { opacity: 1 !important; transform: translateX(-50%) translateY(0) !important; transition: none !important; }
+  .st-stats, .st-stats--vis { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .st-footnote, .st-footnote--vis { opacity: 1 !important; transform: none !important; transition: none !important; }
 }

@@ -552,13 +552,29 @@ function DesignSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const contextRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const svgElemsRef = useRef<Record<string, SVGElement | null>>({});
+
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return;
+    svgElemsRef.current = {
+      candidate: svg.querySelector(".des-candidate"),
+      wall: svg.querySelector(".des-wall"),
+      fill: svg.querySelector(".des-fill"),
+      extLabel: svg.querySelector(".des-ext-label"),
+      sizeLabel: svg.querySelector(".des-size-label"),
+      crosshair: svg.querySelector(".des-crosshair"),
+      genLabel: svg.querySelector(".des-gen-label"),
+      badge: svg.querySelector(".des-badge"),
+    };
+  }, []);
 
   useScrollProgress(sectionRef, (progress) => {
     const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
 
     // Context text: slides in as section enters viewport
     if (contextRef.current) {
-      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.15));
+      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.3));
       contextRef.current.style.opacity = String(ct);
       contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
     }
@@ -566,14 +582,12 @@ function DesignSection() {
     // Active class — only changes once
     sectionRef.current?.classList.toggle("s-design--active", p > 0);
 
-    const svg = svgRef.current;
-    if (!svg) return;
+    const e = svgElemsRef.current;
 
-    const candidate = svg.querySelector<SVGElement>(".des-candidate");
-    if (candidate) candidate.style.opacity = p > 0.05 ? "1" : "0";
+    if (e.candidate) e.candidate.style.opacity = p > 0.05 ? "1" : "0";
 
-    const wall = svg.querySelector<SVGPathElement>(".des-wall");
-    if (wall) {
+    if (e.wall) {
+      const wall = e.wall as SVGPathElement;
       const wallOffset = Math.max(0, 364 - 364 * Math.min(1, Math.max(0, (p - 0.15) / 0.35)));
       const wallColor = p > 0.5
         ? `rgba(245,245,245,${(0.2 + 0.5 * Math.min(1, (p - 0.5) / 0.2)).toFixed(2)})`
@@ -583,23 +597,12 @@ function DesignSection() {
       wall.style.opacity = p > 0.15 ? "1" : "0";
     }
 
-    const fill = svg.querySelector<SVGElement>(".des-fill");
-    if (fill) fill.style.opacity = p > 0.55 ? "1" : "0";
-
-    const extLabel = svg.querySelector<SVGElement>(".des-ext-label");
-    if (extLabel) extLabel.style.opacity = p > 0.6 ? "1" : "0";
-
-    const sizeLabel = svg.querySelector<SVGElement>(".des-size-label");
-    if (sizeLabel) sizeLabel.style.opacity = p > 0.65 ? "1" : "0";
-
-    const crosshair = svg.querySelector<SVGElement>(".des-crosshair");
-    if (crosshair) crosshair.style.opacity = p > 0.08 ? "1" : "0";
-
-    const genLabel = svg.querySelector<SVGElement>(".des-gen-label");
-    if (genLabel) genLabel.style.opacity = p > 0.1 && p < 0.75 ? "1" : "0";
-
-    const badge = svg.querySelector<SVGElement>(".des-badge");
-    if (badge) badge.style.opacity = p > 0.75 ? "1" : "0";
+    if (e.fill) e.fill.style.opacity = p > 0.55 ? "1" : "0";
+    if (e.extLabel) e.extLabel.style.opacity = p > 0.6 ? "1" : "0";
+    if (e.sizeLabel) e.sizeLabel.style.opacity = p > 0.65 ? "1" : "0";
+    if (e.crosshair) e.crosshair.style.opacity = p > 0.08 ? "1" : "0";
+    if (e.genLabel) e.genLabel.style.opacity = p > 0.1 && p < 0.75 ? "1" : "0";
+    if (e.badge) e.badge.style.opacity = p > 0.75 ? "1" : "0";
   });
 
   return (
@@ -721,20 +724,17 @@ function StreetSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const contextRef = useRef<HTMLDivElement>(null);
   const housesRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
+  const footnoteRef = useRef<HTMLParagraphElement>(null);
 
-  const [showDots, setShowDots] = useState(false);
-  const [showStats, setShowStats] = useState(false);
-  const [showFootnote, setShowFootnote] = useState(false);
-
-  // Threshold tracking — only setState when value actually flips
   const prevRef = useRef({ dots: false, stats: false, footnote: false, visibleCount: -1 });
 
   useScrollProgress(sectionRef, (progress) => {
     const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
 
-    // Context text
+    // Context text — wider animation window so it visibly slides in with scroll
     if (contextRef.current) {
-      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.15));
+      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.3));
       contextRef.current.style.opacity = String(ct);
       contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
     }
@@ -751,23 +751,23 @@ function StreetSection() {
       }
     }
 
-    // Threshold booleans — setState only when they flip
+    // All threshold toggles via direct DOM — no React re-renders
     const newDots = p > 0.35;
     if (newDots !== prevRef.current.dots) {
       prevRef.current.dots = newDots;
-      setShowDots(newDots);
+      housesRef.current?.classList.toggle("st-dots-vis", newDots);
     }
 
     const newStats = p > 0.55;
     if (newStats !== prevRef.current.stats) {
       prevRef.current.stats = newStats;
-      setShowStats(newStats);
+      statsRef.current?.classList.toggle("st-stats--vis", newStats);
     }
 
     const newFootnote = p > 0.7;
     if (newFootnote !== prevRef.current.footnote) {
       prevRef.current.footnote = newFootnote;
-      setShowFootnote(newFootnote);
+      footnoteRef.current?.classList.toggle("st-footnote--vis", newFootnote);
     }
   });
 
@@ -787,30 +787,27 @@ function StreetSection() {
                 className={`st-house${h.yours ? " st-house--yours" : ""}`}
                 style={{ transitionDelay: `${i * 50}ms` }}
               >
-                {h.ext && showDots && <span className="st-dot st-dot--ext"/>}
-                {!h.ext && showDots && <span className="st-dot st-dot--none"/>}
+                {h.ext ? <span className="st-dot st-dot--ext"/> : <span className="st-dot st-dot--none"/>}
                 <div className="st-roof" style={{ borderBottomWidth: `${Math.round(h.h * 0.35)}px` }}/>
                 <div className="st-body" style={{ height: `${h.h}px` }}>
-                  {showDots && i === 1 && <span className="st-tooltip">Approved 2022</span>}
-                  {showDots && i === 3 && <span className="st-tooltip">Single storey rear</span>}
-                  {showDots && i === 5 && <span className="st-tooltip">Cost est. £38k</span>}
+                  {i === 1 && <span className="st-tooltip">Approved 2022</span>}
+                  {i === 3 && <span className="st-tooltip">Single storey rear</span>}
+                  {i === 5 && <span className="st-tooltip">Cost est. £38k</span>}
                 </div>
               </div>
             ))}
           </div>
-          {showStats && (
-            <div className="st-stats">
-              <div className="st-stat">
-                <span className="st-stat-val">4</span>
-                <span className="st-stat-lbl">neighbours extended within 100m</span>
-              </div>
-              <div className="st-stat">
-                <span className="st-stat-val">100%</span>
-                <span className="st-stat-lbl">approval rate</span>
-              </div>
+          <div ref={statsRef} className="st-stats">
+            <div className="st-stat">
+              <span className="st-stat-val">4</span>
+              <span className="st-stat-lbl">neighbours extended within 100m</span>
             </div>
-          )}
-          {showFootnote && <p className="st-footnote">Data from Land Registry · Updated monthly</p>}
+            <div className="st-stat">
+              <span className="st-stat-val">100%</span>
+              <span className="st-stat-lbl">approval rate</span>
+            </div>
+          </div>
+          <p ref={footnoteRef} className="st-footnote">Data from Land Registry · Updated monthly</p>
         </div>
       </div>
       <p className="s-section-label s-section-label--bl">The Street</p>
@@ -828,16 +825,16 @@ function ResultSection() {
   const checksRef = useRef<HTMLUListElement>(null);
   const costRef = useRef<HTMLParagraphElement>(null);
   const barFillRef = useRef<HTMLDivElement>(null);
+  const badgeRef = useRef<HTMLSpanElement>(null);
 
-  const [showBadge, setShowBadge] = useState(false);
   const prevBadgeRef = useRef(false);
 
   useScrollProgress(sectionRef, (progress) => {
     const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
 
-    // Context text
+    // Context text — wider window so it visibly animates with scroll
     if (contextRef.current) {
-      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.15));
+      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.3));
       contextRef.current.style.opacity = String(ct);
       contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
     }
@@ -876,11 +873,11 @@ function ResultSection() {
       barFillRef.current.style.width = showCard2 ? "52%" : "0";
     }
 
-    // Badge — setState only when it flips (single re-render)
+    // Badge — direct class toggle, no re-render
     const newBadge = checkCount >= 3;
     if (newBadge !== prevBadgeRef.current) {
       prevBadgeRef.current = newBadge;
-      setShowBadge(newBadge);
+      badgeRef.current?.classList.toggle("rc-badge--vis", newBadge);
     }
   });
 
@@ -904,9 +901,7 @@ function ResultSection() {
               </li>
             ))}
           </ul>
-          {showBadge && (
-            <span className="rc-badge">Permitted Development</span>
-          )}
+          <span ref={badgeRef} className="rc-badge">Permitted Development</span>
         </div>
 
         <div ref={card2Ref} className="rc-card" style={{ transitionDelay: "0.15s" }}>
