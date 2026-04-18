@@ -178,6 +178,360 @@ function BlueprintSVG() {
 }
 
 
+/* ── Planning Demo ─────────────────────────────────────────────────── */
+function PlanningDemo() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        const items = el.querySelectorAll<HTMLElement>(".check-item");
+        items.forEach((item, i) => {
+          setTimeout(() => item.classList.add("visible"), 300 + i * 250);
+        });
+        const result = el.querySelector<HTMLElement>(".planning-result");
+        if (result) setTimeout(() => result.classList.add("visible"), 300 + items.length * 250 + 200);
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div className="planning-demo" ref={ref}>
+      <div className="planning-title">Planning Check</div>
+      <div className="planning-sub">London Borough of Southwark · SE22</div>
+      <div className="check-item">
+        <div className="check-icon pass">✓</div>
+        <div className="check-text">
+          <strong>Permitted Development</strong>
+          <span>Rear extension within 3m limit</span>
+        </div>
+        <span className="check-badge pass">Pass</span>
+      </div>
+      <div className="check-item">
+        <div className="check-icon pass">✓</div>
+        <div className="check-text">
+          <strong>Height restriction</strong>
+          <span>4.0m — within 4m eaves limit</span>
+        </div>
+        <span className="check-badge pass">Pass</span>
+      </div>
+      <div className="check-item">
+        <div className="check-icon pass">✓</div>
+        <div className="check-text">
+          <strong>Conservation area</strong>
+          <span>Property not in designated area</span>
+        </div>
+        <span className="check-badge pass">Pass</span>
+      </div>
+      <div className="check-item">
+        <div className="check-icon warn">!</div>
+        <div className="check-text">
+          <strong>Article 4 direction</strong>
+          <span>Check with local authority</span>
+        </div>
+        <span className="check-badge warn">Review</span>
+      </div>
+      <div className="planning-result">
+        <div className="planning-result-icon">✓</div>
+        <div className="planning-result-text">
+          <strong>Likely permitted development</strong>
+          <span>No full planning application required</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Cost Demo ─────────────────────────────────────────────────────── */
+function CostDemo() {
+  const ref = useRef<HTMLDivElement>(null);
+  const totalRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+
+        const target = 68400;
+        const dur = 1800;
+        const start = performance.now();
+        const tick = (now: number) => {
+          const p = Math.min((now - start) / dur, 1);
+          const val = Math.round(p * target);
+          if (totalRef.current) totalRef.current.textContent = val.toLocaleString("en-GB");
+          if (p < 1) requestAnimationFrame(tick);
+        };
+        setTimeout(() => requestAnimationFrame(tick), 300);
+
+        const bars = el.querySelectorAll<HTMLElement>(".cost-bar-item");
+        bars.forEach((bar, i) => {
+          setTimeout(() => {
+            bar.classList.add("visible");
+            const fill = bar.querySelector<HTMLElement>(".cost-bar-fill");
+            if (fill) {
+              const w = fill.dataset.width ?? "0";
+              setTimeout(() => { fill.style.width = w + "%"; }, 50);
+            }
+          }, 400 + i * 150);
+        });
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div className="cost-demo" ref={ref}>
+      <div className="cost-total">
+        <div className="cost-total-label">Estimated build cost</div>
+        <div className="cost-total-value">
+          <em className="currency">£</em>
+          <span ref={totalRef}>0</span>
+        </div>
+        <div className="cost-range">Typical range: £58k – £79k</div>
+      </div>
+      <div className="cost-bars">
+        <div className="cost-bar-item">
+          <div className="cost-bar-meta">
+            <span className="cost-bar-name">Structure &amp; groundwork</span>
+            <span className="cost-bar-amount">£21,200</span>
+          </div>
+          <div className="cost-bar-track">
+            <div className="cost-bar-fill blue" data-width="72" />
+          </div>
+        </div>
+        <div className="cost-bar-item">
+          <div className="cost-bar-meta">
+            <span className="cost-bar-name">Labour</span>
+            <span className="cost-bar-amount">£18,600</span>
+          </div>
+          <div className="cost-bar-track">
+            <div className="cost-bar-fill gold" data-width="60" />
+          </div>
+        </div>
+        <div className="cost-bar-item">
+          <div className="cost-bar-meta">
+            <span className="cost-bar-name">Fixtures &amp; finish</span>
+            <span className="cost-bar-amount">£14,800</span>
+          </div>
+          <div className="cost-bar-track">
+            <div className="cost-bar-fill soft" data-width="48" />
+          </div>
+        </div>
+        <div className="cost-bar-item">
+          <div className="cost-bar-meta">
+            <span className="cost-bar-name">Fees &amp; contingency</span>
+            <span className="cost-bar-amount">£13,800</span>
+          </div>
+          <div className="cost-bar-track">
+            <div className="cost-bar-fill soft" data-width="44" />
+          </div>
+        </div>
+      </div>
+      <div className="cost-regional">
+        <span>📍</span>
+        <span>London regional rates · Q1 2025 data</span>
+      </div>
+    </div>
+  );
+}
+
+/* ── Design Demo ───────────────────────────────────────────────────── */
+function DesignDemo() {
+  const ref = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+
+        const lines = el.querySelectorAll<SVGElement>(".d-line");
+        const extLines = el.querySelectorAll<SVGElement>(".d-ext-line");
+        const fills = el.querySelectorAll<SVGElement>(".d-fill");
+        const extFill = el.querySelector<SVGElement>(".d-ext-fill");
+        const labels = el.querySelectorAll<SVGElement>(".d-label");
+        const badge = el.querySelector<SVGElement>(".d-badge");
+        const pill = el.querySelector<HTMLElement>(".d-pill");
+
+        lines.forEach((l, i) => {
+          setTimeout(() => {
+            l.style.transition = `stroke-dashoffset ${600}ms cubic-bezier(0.4,0,0.2,1)`;
+            l.style.strokeDashoffset = "0";
+          }, 200 + i * 120);
+        });
+        setTimeout(() => { fills.forEach(f => { f.style.transition = "opacity 0.8s"; f.style.opacity = "1"; }); }, 200 + lines.length * 120);
+        extLines.forEach((l, i) => {
+          setTimeout(() => {
+            l.style.transition = `stroke-dashoffset 500ms cubic-bezier(0.4,0,0.2,1)`;
+            l.style.strokeDashoffset = "0";
+          }, 1200 + i * 200);
+        });
+        setTimeout(() => {
+          if (extFill) { extFill.style.transition = "opacity 0.8s"; extFill.style.opacity = "1"; }
+          labels.forEach(l => { l.style.transition = "opacity 0.5s"; l.style.opacity = "1"; });
+          if (badge) { badge.style.transition = "opacity 0.4s, transform 0.4s"; badge.style.opacity = "1"; badge.style.transform = "scale(1)"; }
+          if (pill) { pill.style.transition = "opacity 0.5s"; pill.style.opacity = "1"; }
+        }, 1200 + extLines.length * 200 + 200);
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div style={{ position: "relative", width: "100%", maxWidth: "480px" }}>
+      <div
+        className="d-pill"
+        style={{
+          position: "absolute", top: 12, right: 12, zIndex: 10,
+          background: "rgba(200,155,60,0.15)", border: "1px solid rgba(200,155,60,0.35)",
+          color: "var(--gold-light)", fontSize: 11, fontWeight: 600, letterSpacing: "0.06em",
+          textTransform: "uppercase", padding: "5px 12px", borderRadius: 20, opacity: 0,
+        }}
+      >
+        AI Designed
+      </div>
+      <svg
+        ref={ref}
+        viewBox="0 0 480 440"
+        xmlns="http://www.w3.org/2000/svg"
+        style={{ width: "100%", background: "rgba(15,34,64,0.6)", borderRadius: 12, border: "1px solid rgba(74,127,165,0.2)" }}
+      >
+        <defs>
+          <pattern id="dgrid" width="24" height="24" patternUnits="userSpaceOnUse">
+            <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(74,127,165,0.08)" strokeWidth="1" />
+          </pattern>
+        </defs>
+        <rect width="480" height="440" fill="url(#dgrid)" />
+
+        <polygon className="d-fill" points="60,80 320,80 320,320 60,320" fill="rgba(74,127,165,0.08)" style={{ opacity: 0 }} />
+        <rect className="d-ext-fill" x="320" y="160" width="100" height="120" fill="rgba(200,155,60,0.12)" style={{ opacity: 0 }} />
+
+        <line className="d-line" x1="60" y1="80" x2="320" y2="80" stroke="rgba(122,180,212,0.75)" strokeWidth="2" strokeDasharray="1000" style={{ strokeDashoffset: 1000 }} />
+        <line className="d-line" x1="320" y1="80" x2="320" y2="160" stroke="rgba(122,180,212,0.75)" strokeWidth="2" strokeDasharray="1000" style={{ strokeDashoffset: 1000 }} />
+        <line className="d-line" x1="320" y1="280" x2="320" y2="320" stroke="rgba(122,180,212,0.75)" strokeWidth="2" strokeDasharray="1000" style={{ strokeDashoffset: 1000 }} />
+        <line className="d-line" x1="320" y1="320" x2="60" y2="320" stroke="rgba(122,180,212,0.75)" strokeWidth="2" strokeDasharray="1000" style={{ strokeDashoffset: 1000 }} />
+        <line className="d-line" x1="60" y1="320" x2="60" y2="80" stroke="rgba(122,180,212,0.75)" strokeWidth="2" strokeDasharray="1000" style={{ strokeDashoffset: 1000 }} />
+        <line className="d-line" x1="60" y1="200" x2="320" y2="200" stroke="rgba(122,180,212,0.75)" strokeWidth="1.5" strokeDasharray="800" style={{ strokeDashoffset: 800, opacity: 0.5 }} />
+        <line className="d-line" x1="190" y1="80" x2="190" y2="320" stroke="rgba(122,180,212,0.75)" strokeWidth="1.5" strokeDasharray="800" style={{ strokeDashoffset: 800, opacity: 0.5 }} />
+
+        <line className="d-ext-line" x1="320" y1="160" x2="420" y2="160" stroke="var(--gold-light)" strokeWidth="2.5" strokeDasharray="600" style={{ strokeDashoffset: 600 }} />
+        <line className="d-ext-line" x1="420" y1="160" x2="420" y2="280" stroke="var(--gold-light)" strokeWidth="2.5" strokeDasharray="600" style={{ strokeDashoffset: 600 }} />
+        <line className="d-ext-line" x1="420" y1="280" x2="320" y2="280" stroke="var(--gold-light)" strokeWidth="2.5" strokeDasharray="600" style={{ strokeDashoffset: 600 }} />
+
+        <text className="d-label" x="180" y="360" textAnchor="middle" fill="rgba(74,127,165,0.75)" fontFamily="DM Sans,sans-serif" fontSize="10" style={{ opacity: 0 }}>8.0m</text>
+        <text className="d-label" x="370" y="360" textAnchor="middle" fill="rgba(74,127,165,0.75)" fontFamily="DM Sans,sans-serif" fontSize="10" style={{ opacity: 0 }}>3.0m ext</text>
+        <text className="d-label" x="370" y="222" textAnchor="middle" fill="var(--gold-light)" fontFamily="DM Sans,sans-serif" fontSize="9" fontWeight="600" style={{ opacity: 0 }}>EXTENSION</text>
+        <text className="d-label" x="370" y="236" textAnchor="middle" fill="var(--gold-light)" fontFamily="DM Sans,sans-serif" fontSize="9" style={{ opacity: 0 }}>+36m²</text>
+
+        <g className="d-badge" style={{ opacity: 0, transformOrigin: "370px 190px", transform: "scale(0.8)" }}>
+          <rect x="338" y="175" width="64" height="22" rx="4" fill="rgba(200,155,60,0.15)" stroke="rgba(200,155,60,0.35)" strokeWidth="1" />
+          <text x="370" y="190" textAnchor="middle" fill="var(--gold-light)" fontFamily="DM Sans,sans-serif" fontSize="9" fontWeight="600">AI DESIGNED</text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+/* ── Neighbour Demo ─────────────────────────────────────────────────── */
+function NeighbourDemo() {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        io.disconnect();
+        const houses = el.querySelectorAll<HTMLElement>(".house");
+        houses.forEach((h, i) => {
+          setTimeout(() => h.classList.add("visible"), 200 + i * 180);
+        });
+        const stats = el.querySelectorAll<HTMLElement>(".n-stat");
+        stats.forEach((s, i) => {
+          setTimeout(() => s.classList.add("visible"), 200 + houses.length * 180 + i * 120);
+        });
+      },
+      { threshold: 0.3 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div className="neighbour-demo" ref={ref}>
+      <div className="street-label">Lordship Lane, SE22 · 100m radius</div>
+      <div className="street-view">
+        <div className="house">
+          <div className="house-body neighbour" style={{ height: "72px" }}>
+            <div className="house-ext-tag">+18m²</div>
+          </div>
+          <div className="house-base" />
+          <div className="house-label">No. 14</div>
+        </div>
+        <div className="house">
+          <div className="house-body neighbour" style={{ height: "58px" }} />
+          <div className="house-base" />
+          <div className="house-label">No. 16</div>
+        </div>
+        <div className="house">
+          <div className="house-body yours" style={{ height: "80px" }}>
+            <div className="house-ext-tag">+36m²</div>
+          </div>
+          <div className="house-base" />
+          <div className="house-label yours-label">Yours</div>
+        </div>
+        <div className="house">
+          <div className="house-body neighbour" style={{ height: "65px" }}>
+            <div className="house-ext-tag">+22m²</div>
+          </div>
+          <div className="house-base" />
+          <div className="house-label">No. 20</div>
+        </div>
+        <div className="house">
+          <div className="house-body neighbour" style={{ height: "48px" }} />
+          <div className="house-base" />
+          <div className="house-label">No. 22</div>
+        </div>
+      </div>
+      <div className="neighbour-stats">
+        <div className="n-stat">
+          <div className="n-stat-value">73%</div>
+          <div className="n-stat-label">of nearby homes have extended</div>
+        </div>
+        <div className="n-stat">
+          <div className="n-stat-value">3.1m</div>
+          <div className="n-stat-label">average rear extension depth</div>
+        </div>
+        <div className="n-stat">
+          <div className="n-stat-value">18</div>
+          <div className="n-stat-label">approved applications nearby</div>
+        </div>
+        <div className="n-stat">
+          <div className="n-stat-value">£0</div>
+          <div className="n-stat-label">planning refusals on record</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── Main Page ─────────────────────────────────────────────────────── */
 export default function Home() {
   useReveal();
@@ -275,86 +629,62 @@ export default function Home() {
       {/* FEATURE 01: Planning Check */}
       <section className="feature dark" id="feat-planning">
         <div className="feature-copy">
-          <div className="feature-index reveal">01 / Planning Rules</div>
-          <h2 className="feature-headline reveal reveal-delay-1">Your extension, checked against every rule</h2>
-          <p className="feature-body reveal reveal-delay-2">
+          <h2 className="feature-headline reveal">Your rules. Checked instantly.</h2>
+          <p className="feature-body reveal reveal-delay-1">
             We run your design against UK Permitted Development rights, local Article 4 directions, and conservation area restrictions — in seconds. No solicitor required.
           </p>
-          <a href="#" className="feature-link reveal reveal-delay-3">
+          <a href="#" className="feature-link reveal reveal-delay-2">
             See how it works <ArrowIcon />
           </a>
         </div>
         <div className="feature-demo">
-          <img
-            src="/brand/screenshot-planning.png"
-            alt="App screenshot: planning check result showing permitted development pass state"
-            loading="lazy"
-            style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
-          />
+          <PlanningDemo />
         </div>
       </section>
 
       {/* FEATURE 02: Cost Estimate */}
       <section className="feature light reversed" id="feat-cost">
         <div className="feature-copy">
-          <div className="feature-index reveal">02 / Cost Estimate</div>
-          <h2 className="feature-headline reveal reveal-delay-1">Real costs, not rough guesses</h2>
-          <p className="feature-body reveal reveal-delay-2">
+          <h2 className="feature-headline reveal">Know the number before you call anyone.</h2>
+          <p className="feature-body reveal reveal-delay-1">
             We calculate your estimate from live regional build-cost data, updated every quarter. See exactly where your money goes before you speak to a single builder.
           </p>
-          <a href="#" className="feature-link reveal reveal-delay-3">
+          <a href="#" className="feature-link reveal reveal-delay-2">
             See sample report <ArrowIcon />
           </a>
         </div>
         <div className="feature-demo">
-          <img
-            src="/brand/screenshot-cost.png"
-            alt="App screenshot: cost estimate breakdown showing itemised build costs"
-            loading="lazy"
-            style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
-          />
+          <CostDemo />
         </div>
       </section>
 
       {/* FEATURE 03: AI Design */}
       <section className="feature dark" id="feat-ai-design">
         <div className="feature-copy">
-          <div className="feature-index reveal">03 / AI Design</div>
-          <h2 className="feature-headline reveal reveal-delay-1">Your extension, designed by AI, and by you</h2>
-          <p className="feature-body reveal reveal-delay-2">
+          <h2 className="feature-headline reveal">Watch your extension take shape.</h2>
+          <p className="feature-body reveal reveal-delay-1">
             Our AI analyses your floor plan and proposes the optimal extension layout — maximising usable space while staying within permitted development limits. Full architectural drawings included in every report.
           </p>
-          <a href="#" className="feature-link reveal reveal-delay-3">
+          <a href="#" className="feature-link reveal reveal-delay-2">
             See a sample design <ArrowIcon />
           </a>
         </div>
         <div className="feature-demo">
-          <img
-            src="/brand/screenshot-design.png"
-            alt="App screenshot: AI-generated floor plan with extension zone overlay"
-            loading="lazy"
-            style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
-          />
+          <DesignDemo />
         </div>
       </section>
 
       {/* FEATURE 04: Neighbour Comparison */}
-      <section className="feature dark" id="feat-neighbour">
-        <div className="feature-demo" style={{ background: "var(--stone)" }}>
-          <img
-            src="/brand/screenshot-neighbour.png"
-            alt="App screenshot: neighbour comparison map showing nearby approved extensions"
-            loading="lazy"
-            style={{ borderRadius: "8px", maxWidth: "560px", width: "100%" }}
-          />
+      <section className="feature light reversed" id="feat-neighbour">
+        <div className="feature-demo">
+          <NeighbourDemo />
         </div>
-        <div className="feature-copy" style={{ background: "var(--navy-deep)" }}>
-          <div className="feature-index reveal">04 / Neighbour Comparison</div>
-          <h2 className="feature-headline reveal reveal-delay-1">See what your street has already built</h2>
-          <p className="feature-body reveal reveal-delay-2">
+        <div className="feature-copy">
+          <h2 className="feature-headline reveal">See what your street already built.</h2>
+          <p className="feature-body reveal reveal-delay-1">
             We pull planning application data for every house within 100m. You see what your neighbours approved, what they built, and what that means for your application.
           </p>
-          <a href="#" className="feature-link reveal reveal-delay-3">
+          <a href="#" className="feature-link reveal reveal-delay-2">
             See how we source data <ArrowIcon />
           </a>
         </div>
