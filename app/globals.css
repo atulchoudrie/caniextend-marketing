@@ -1001,7 +1001,7 @@ body {
 .s-upload {
   position: relative;
   min-height: 100vh;
-  background: var(--navy-deep);
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(74,127,165,0.10) 0%, transparent 70%), var(--navy-deep);
   border-top: 1px solid rgba(255,255,255,0.055);
   display: flex;
   align-items: center;
@@ -1300,18 +1300,6 @@ body {
    SECTIONS 3–7
    ═══════════════════════════════════════════════════════════ */
 
-/* Subtle blue glow matching the hero — keeps colour consistent across all sections */
-.s-upload::before,
-.s-design::before,
-.s-street::before,
-.s-result::before,
-.s-cta-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(74,127,165,0.10) 0%, transparent 70%);
-  pointer-events: none;
-}
 
 /* shared label token */
 :root {
@@ -1383,7 +1371,7 @@ body {
 .s-design {
   position: relative;
   min-height: 100dvh;
-  background: var(--bg-primary);
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(74,127,165,0.10) 0%, transparent 70%), var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1401,7 +1389,7 @@ body {
 .s-street {
   position: relative;
   min-height: 100dvh;
-  background: var(--bg-primary);
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(74,127,165,0.10) 0%, transparent 70%), var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1545,7 +1533,7 @@ body {
 .s-result {
   position: relative;
   min-height: 100dvh;
-  background: var(--bg-primary);
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(74,127,165,0.10) 0%, transparent 70%), var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1639,7 +1627,7 @@ body {
 .s-cta-section {
   position: relative;
   min-height: 100dvh;
-  background: var(--bg-primary);
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(74,127,165,0.10) 0%, transparent 70%), var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1719,7 +1707,7 @@ body {
 /* ── Section 7: FOOTER ─── */
 .s-footer {
   height: 120px;
-  background: var(--bg-primary);
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(74,127,165,0.10) 0%, transparent 70%), var(--bg-primary);
   border-top: 1px solid rgba(255,255,255,0.06);
   display: flex;
   align-items: center;
