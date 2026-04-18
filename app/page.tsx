@@ -45,33 +45,33 @@ function UploadDemo() {
         setPhase("idle");
         setProgress(0);
         setRooms([]);
-        await wait(1400);
+        await wait(1000);
 
         setPhase("dragging");
-        await wait(900);
+        await wait(600);
 
         setPhase("dropped");
-        await wait(350);
+        await wait(250);
 
         setPhase("processing");
         for (let p = 0; p <= 100 && !cancelled; p += 5) {
           setProgress(p);
-          await wait(38);
+          await wait(22);
         }
         setProgress(100);
-        await wait(200);
+        await wait(150);
 
         setPhase("scanning");
-        await wait(2000);
+        await wait(1200);
 
         setPhase("detecting");
         for (let i = 0; i < 4 && !cancelled; i++) {
           setRooms((r) => [...r, i]);
-          await wait(480);
+          await wait(300);
         }
 
         setPhase("complete");
-        await wait(2800);
+        await wait(2000);
       }
     }
 
@@ -522,6 +522,10 @@ function DesignSection() {
   const { ref, inView } = useInView(0.3);
   return (
     <section ref={ref as React.RefObject<HTMLElement>} className={`s-design${inView ? " s-design--active" : ""}`} aria-label="The Design">
+      <div className="s-context">
+        <p className="s-context-step">Step 1</p>
+        <p className="s-context-text">Our AI designs your extension — optimised for your floorplan, within permitted development limits.</p>
+      </div>
       <svg className="s-design-svg" viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         {/* Grid */}
         <defs>
@@ -590,27 +594,27 @@ function StreetSection() {
     async function loop() {
       while (!cancelled) {
         setPhase(0); setVisible([]);
-        await wait(1000);
+        await wait(600);
 
         setPhase(1);
         for (let i = 0; i < 9 && !cancelled; i++) {
           setVisible(v => [...v, i]);
-          await wait(150);
+          await wait(100);
         }
-        await wait(500);
+        await wait(300);
 
         setPhase(2);
-        await wait(2500);
+        await wait(1500);
 
         setPhase(3);
-        await wait(2500);
+        await wait(1500);
 
         setPhase(4);
-        await wait(1500);
+        await wait(1000);
 
         // fade out then loop
         setPhase(0); setVisible([]);
-        await wait(800);
+        await wait(600);
       }
     }
     loop();
@@ -626,6 +630,10 @@ function StreetSection() {
 
   return (
     <section ref={ref as React.RefObject<HTMLElement>} className="s-street" aria-label="The Street">
+      <div className="s-context">
+        <p className="s-context-step">Step 2</p>
+        <p className="s-context-text">See which neighbours have extended, what they built, and whether they got approval.</p>
+      </div>
       <div className="s-street-inner">
         <div className="s-street-scene" aria-hidden="true">
           {/* Ground line */}
@@ -686,38 +694,38 @@ function ResultSection() {
     async function loop() {
       while (!cancelled) {
         setPhase(0); setCount(0); setItems([]);
-        await wait(500);
+        await wait(400);
 
         // Card 1 — Planning Check
         setPhase(1);
         for (let i = 0; i < 3 && !cancelled; i++) {
           setItems(v => [...v, i]);
-          await wait(300);
+          await wait(200);
         }
-        await wait(700);
+        await wait(400);
 
         // Card 2 — Cost Estimate
         setPhase(2);
         const target = 42500;
-        const steps = 60;
+        const steps = 40;
         for (let i = 1; i <= steps && !cancelled; i++) {
           const ease = 1 - Math.pow(1 - i / steps, 3);
           setCount(Math.round(target * ease));
-          await wait(1500 / steps);
+          await wait(800 / steps);
         }
-        await wait(600);
+        await wait(400);
 
         // Card 3 — AI Design
         setPhase(3);
-        await wait(1500);
+        await wait(1000);
 
         // All visible + glow
         setPhase(4);
-        await wait(1500);
+        await wait(1000);
 
         // Fade
         setPhase(5);
-        await wait(500);
+        await wait(400);
       }
     }
     loop();
@@ -726,6 +734,10 @@ function ResultSection() {
 
   return (
     <section ref={ref as React.RefObject<HTMLElement>} className="s-result" aria-label="The Result">
+      <div className="s-context">
+        <p className="s-context-step">Step 3</p>
+        <p className="s-context-text">Get your planning check, cost estimate, and full extension design — all in one report.</p>
+      </div>
       <div className="s-result-inner">
         {/* Card 1: Planning Check */}
         <div className={`rc-card${phase >= 1 ? " rc-card--vis" : ""}${phase >= 4 ? " rc-card--glow" : ""}`}>

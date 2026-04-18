@@ -1321,6 +1321,44 @@ body {
   .s-section-label--bl { bottom: 24px; left: 24px; font-size: 11px; }
 }
 
+/* ── Section context text ─── */
+.s-context {
+  position: absolute;
+  top: 48px;
+  left: 48px;
+  right: 48px;
+  text-align: left;
+}
+.s-context-step {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent, rgba(232,255,71,0.7));
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.s-context-step::before {
+  content: '';
+  width: 20px;
+  height: 1px;
+  background: var(--accent, rgba(232,255,71,0.35));
+}
+.s-context-text {
+  font-family: var(--font-display, 'DM Serif Display', serif);
+  font-size: clamp(18px, 2.5vw, 24px);
+  color: rgba(245,245,245,0.6);
+  line-height: 1.4;
+  max-width: 420px;
+  margin: 0;
+}
+@media (max-width: 640px) {
+  .s-context { top: 24px; left: 24px; right: 24px; }
+  .s-context-text { font-size: 16px; }
+}
+
 /* ── Section 3: THE DESIGN ─── */
 .s-design {
   position: relative;
@@ -1351,27 +1389,27 @@ body {
 }
 .s-design--active .des-cursor {
   opacity: 1;
-  transition-delay: 1.5s;
+  transition-delay: 0.6s;
 }
 
 /* Generating label */
 .des-gen-label {
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
 }
 .s-design--active .des-gen-label {
   opacity: 1;
-  transition-delay: 1.8s;
+  transition-delay: 0.8s;
 }
 
 /* Extension wall draw */
 .des-wall {
   opacity: 0;
-  transition: opacity 0.1s ease 3.2s;
+  transition: opacity 0.1s ease 1.2s;
 }
 .s-design--active .des-wall {
   opacity: 1;
-  animation: des-draw 4s 3.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: des-draw 1.8s 1.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 @keyframes des-draw {
   from { stroke-dashoffset: 364; stroke: #E8FF47; }
@@ -1382,27 +1420,27 @@ body {
 /* Extension fill */
 .des-fill {
   opacity: 0;
-  transition: opacity 0.8s ease;
+  transition: opacity 0.5s ease;
 }
 .s-design--active .des-fill {
   opacity: 1;
-  transition-delay: 7.5s;
+  transition-delay: 3.2s;
 }
 
 /* Extension labels */
 .des-label, .des-badge {
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.4s ease;
 }
-.s-design--active .des-label { opacity: 1; transition-delay: 7.8s; }
-.s-design--active .des-badge { opacity: 1; transition-delay: 8.1s; }
+.s-design--active .des-label { opacity: 1; transition-delay: 3.4s; }
+.s-design--active .des-badge { opacity: 1; transition-delay: 3.6s; }
 
 /* Design complete chip */
 .des-chip {
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
 }
-.s-design--active .des-chip { opacity: 1; transition-delay: 9.5s; }
+.s-design--active .des-chip { opacity: 1; transition-delay: 4.0s; }
 
 /* ── Section 4: THE STREET ─── */
 .s-street {
