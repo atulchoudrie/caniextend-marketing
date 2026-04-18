@@ -58,14 +58,14 @@ body {
   color: var(--white);
 }
 .nav-logo-mark {
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.3s;
 }
-.nav-logo-mark img { width: 32px; height: 32px; }
+.nav-logo-mark img { width: 42px; height: 42px; }
 .nav-logo:hover .nav-logo-mark { transform: rotate(-5deg) scale(1.1); }
 .nav-logo-text {
   font-family: var(--font-display);
@@ -1037,6 +1037,7 @@ body {
 .s-upload-demo {
   width: 100%;
   min-height: 480px;
+  overflow: hidden;
 }
 
 /* ── Upload demo component ── */

@@ -954,7 +954,7 @@ export default function Home() {
       <nav className={`site-nav ${scrolled ? "scrolled" : ""}`}>
         <a href="/" className="nav-logo">
           <div className="nav-logo-mark">
-            <img src="/brand/mark.svg" alt="" width="32" height="32" />
+            <img src="/brand/logo-preferred.png" alt="" width="42" height="42" />
           </div>
           <span className="nav-logo-text">Can I Extend</span>
         </a>
