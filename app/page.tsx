@@ -641,66 +641,74 @@ export default function Home() {
       </div>
 
       {/* FEATURE 01: Planning Check */}
-      <section className="feature dark" id="feat-planning">
-        <div className="feature-copy">
-          <h2 className="feature-headline reveal">Your rules. Checked instantly.</h2>
-          <p className="feature-body reveal reveal-delay-1">
-            We run your design against UK Permitted Development rights, local Article 4 directions, and conservation area restrictions — in seconds. No solicitor required.
-          </p>
-          <a href="#" className="feature-link reveal reveal-delay-2">
-            See how it works <ArrowIcon />
-          </a>
-        </div>
-        <div className="feature-demo">
-          <PlanningDemo />
+      <section className="feature-section dark" id="feat-planning">
+        <div className="feature">
+          <div className="feature-copy">
+            <h2 className="feature-headline reveal">Your rules. Checked instantly.</h2>
+            <p className="feature-body reveal reveal-delay-1">
+              We run your design against UK Permitted Development rights, local Article 4 directions, and conservation area restrictions — in seconds. No solicitor required.
+            </p>
+            <a href="#" className="feature-link reveal reveal-delay-2">
+              See how it works <ArrowIcon />
+            </a>
+          </div>
+          <div className="feature-demo">
+            <PlanningDemo />
+          </div>
         </div>
       </section>
 
       {/* FEATURE 02: Cost Estimate */}
-      <section className="feature light reversed" id="feat-cost">
-        <div className="feature-copy">
-          <h2 className="feature-headline reveal">Know the number before you call anyone.</h2>
-          <p className="feature-body reveal reveal-delay-1">
-            We calculate your estimate from live regional build-cost data, updated every quarter. See exactly where your money goes before you speak to a single builder.
-          </p>
-          <a href="#" className="feature-link reveal reveal-delay-2">
-            See sample report <ArrowIcon />
-          </a>
-        </div>
-        <div className="feature-demo" style={{ background: "var(--navy-mid)" }}>
-          <CostDemo />
+      <section className="feature-section light" id="feat-cost">
+        <div className="feature reversed">
+          <div className="feature-copy">
+            <h2 className="feature-headline reveal">Know the number before you call anyone.</h2>
+            <p className="feature-body reveal reveal-delay-1">
+              We calculate your estimate from live regional build-cost data, updated every quarter. See exactly where your money goes before you speak to a single builder.
+            </p>
+            <a href="#" className="feature-link reveal reveal-delay-2">
+              See sample report <ArrowIcon />
+            </a>
+          </div>
+          <div className="feature-demo" style={{ background: "var(--navy-mid)" }}>
+            <CostDemo />
+          </div>
         </div>
       </section>
 
       {/* FEATURE 03: AI Design */}
-      <section className="feature dark" id="feat-ai-design">
-        <div className="feature-copy">
-          <h2 className="feature-headline reveal">Watch your extension take shape.</h2>
-          <p className="feature-body reveal reveal-delay-1">
-            Our AI analyses your floor plan and proposes the optimal extension layout — maximising usable space while staying within permitted development limits. Full architectural drawings included in every report.
-          </p>
-          <a href="#" className="feature-link reveal reveal-delay-2">
-            See a sample design <ArrowIcon />
-          </a>
-        </div>
-        <div className="feature-demo">
-          <DesignDemo />
+      <section className="feature-section dark" id="feat-ai-design">
+        <div className="feature">
+          <div className="feature-copy">
+            <h2 className="feature-headline reveal">Watch your extension take shape.</h2>
+            <p className="feature-body reveal reveal-delay-1">
+              Our AI analyses your floor plan and proposes the optimal extension layout — maximising usable space while staying within permitted development limits. Full architectural drawings included in every report.
+            </p>
+            <a href="#" className="feature-link reveal reveal-delay-2">
+              See a sample design <ArrowIcon />
+            </a>
+          </div>
+          <div className="feature-demo">
+            <DesignDemo />
+          </div>
         </div>
       </section>
 
       {/* FEATURE 04: Neighbour Comparison */}
-      <section className="feature light reversed" id="feat-neighbour">
-        <div className="feature-demo">
-          <NeighbourDemo />
-        </div>
-        <div className="feature-copy">
-          <h2 className="feature-headline reveal">See what your street already built.</h2>
-          <p className="feature-body reveal reveal-delay-1">
-            We pull planning application data for every house within 100m. You see what your neighbours approved, what they built, and what that means for your application.
-          </p>
-          <a href="#" className="feature-link reveal reveal-delay-2">
-            See how we source data <ArrowIcon />
-          </a>
+      <section className="feature-section light" id="feat-neighbour">
+        <div className="feature reversed">
+          <div className="feature-demo">
+            <NeighbourDemo />
+          </div>
+          <div className="feature-copy">
+            <h2 className="feature-headline reveal">See what your street already built.</h2>
+            <p className="feature-body reveal reveal-delay-1">
+              We pull planning application data for every house within 100m. You see what your neighbours approved, what they built, and what that means for your application.
+            </p>
+            <a href="#" className="feature-link reveal reveal-delay-2">
+              See how we source data <ArrowIcon />
+            </a>
+          </div>
         </div>
       </section>
 
