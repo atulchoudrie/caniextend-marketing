@@ -999,6 +999,7 @@ body {
 
 /* ── Upload section ── */
 .s-upload {
+  position: relative;
   min-height: 100vh;
   background: var(--navy-deep);
   border-top: 1px solid rgba(255,255,255,0.055);
@@ -1006,6 +1007,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 80px 24px;
+  overflow: hidden;
 }
 .s-upload-inner {
   width: 100%;
@@ -1297,6 +1299,19 @@ body {
 /* ═══════════════════════════════════════════════════════════
    SECTIONS 3–7
    ═══════════════════════════════════════════════════════════ */
+
+/* Subtle blue glow matching the hero — keeps colour consistent across all sections */
+.s-upload::before,
+.s-design::before,
+.s-street::before,
+.s-result::before,
+.s-cta-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(74,127,165,0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
 
 /* shared label token */
 :root {
@@ -1622,11 +1637,13 @@ body {
 
 /* ── Section 6: SINGLE CTA ─── */
 .s-cta-section {
+  position: relative;
   min-height: 100dvh;
   background: var(--bg-primary);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   border-top: 1px solid rgba(255,255,255,0.05);
 }
 .s-cta-inner {
