@@ -891,41 +891,6 @@ body {
   background: linear-gradient(to bottom, var(--navy-deep) 0%, var(--stone) 40px, var(--stone) 100%);
 }
 
-/* ─── PROOF LIST ─── */
-.proof-list {
-  list-style: none;
-  margin: 24px 0 0;
-  padding: 0;
-}
-.proof-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  font-size: 15px;
-  line-height: 1.55;
-  padding: 5px 0;
-}
-.proof-list li::before {
-  content: "✓";
-  color: var(--blue);
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-.dark .proof-list li { color: rgba(255,255,255,0.65); }
-.light .proof-list li { color: var(--charcoal-mid); }
-.dark .proof-list li::before { color: var(--blue-light); }
-
-/* ─── COUNTER HEADING ─── */
-.counter-heading {
-  font-family: var(--font-display);
-  font-size: clamp(24px, 3vw, 36px);
-  color: white;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 40px;
-}
-
 /* ─── REDUCED MOTION ─── */
 @media (prefers-reduced-motion: reduce) {
   .reveal {
