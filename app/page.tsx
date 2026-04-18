@@ -1,6 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+
+function useInView(threshold = 0.3) {
+  const ref = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, inView };
+}
 
 type UploadPhase = "idle" | "dragging" | "dropped" | "processing" | "scanning" | "detecting" | "complete";
 
@@ -476,6 +489,296 @@ function UploadDemo() {
   );
 }
 
+// ── Postcode form (section 6) ─────────────────────────────────
+const UK_POSTCODE = /^[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}$/i;
+
+function PostcodeForm() {
+  const [value, setValue] = useState("");
+  const valid = UK_POSTCODE.test(value.trim());
+  return (
+    <div className="s-postcode-stack">
+      <div className="s-postcode-wrap">
+        <input
+          className={`s-postcode-input${valid ? " s-postcode-input--valid" : ""}`}
+          type="text"
+          placeholder="Enter your postcode"
+          value={value}
+          onChange={e => setValue(e.target.value.toUpperCase())}
+          maxLength={8}
+          aria-label="Enter your postcode"
+          autoComplete="postal-code"
+        />
+        {valid && <span className="s-postcode-check" aria-hidden="true">✓</span>}
+      </div>
+      <a href={`/proposals${valid ? `?postcode=${encodeURIComponent(value.trim())}` : ""}`} className="s-cta-btn">
+        Get started
+      </a>
+    </div>
+  );
+}
+
+// ── Section 3: THE DESIGN ─────────────────────────────────────
+function DesignSection() {
+  const { ref, inView } = useInView(0.3);
+  return (
+    <section ref={ref as React.RefObject<HTMLElement>} className={`s-design${inView ? " s-design--active" : ""}`} aria-label="The Design">
+      <svg className="s-design-svg" viewBox="0 0 300 280" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        {/* Grid */}
+        <defs>
+          <pattern id="dg" width="12" height="12" patternUnits="userSpaceOnUse">
+            <path d="M 12 0 L 0 0 0 12" fill="none" stroke="rgba(232,255,71,0.04)" strokeWidth="0.5"/>
+          </pattern>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <rect width="300" height="280" fill="url(#dg)"/>
+
+        {/* Existing floorplan walls */}
+        <rect x="20" y="20" width="140" height="96" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
+        <rect x="160" y="20" width="100" height="56" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
+        <rect x="160" y="76" width="100" height="60" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
+        <rect x="20" y="116" width="140" height="80" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1.5"/>
+
+        {/* Extension candidate ghost */}
+        <rect className="des-candidate" x="30" y="196" width="120" height="58" fill="rgba(232,255,71,0.04)" stroke="rgba(232,255,71,0.15)" strokeWidth="1" strokeDasharray="5 4"/>
+
+        {/* Extension walls (drawn via stroke-dasharray animation) */}
+        <path className="des-wall" d="M 30 196 L 30 254 L 150 254 L 150 196" fill="none" stroke="#E8FF47" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="364" strokeDashoffset="364"/>
+
+        {/* Extension fill */}
+        <rect className="des-fill" x="31" y="197" width="118" height="56" fill="rgba(232,255,71,0.06)"/>
+
+        {/* Room dimension label */}
+        <text className="des-label" x="90" y="230" textAnchor="middle" fill="#8A8A8A" fontFamily="DM Sans,sans-serif" fontSize="9" letterSpacing="0.04em">Extension — 4.2m × 5.8m</text>
+        <text className="des-badge" x="90" y="248" textAnchor="middle" fill="#F5F5F5" fontFamily="DM Sans,sans-serif" fontSize="8" fontWeight="600">24.4 m²</text>
+
+        {/* Cursor reticle */}
+        <g className="des-cursor">
+          <line x1="86" y1="196" x2="94" y2="196" stroke="#E8FF47" strokeWidth="1.5"/>
+          <line x1="90" y1="192" x2="90" y2="200" stroke="#E8FF47" strokeWidth="1.5"/>
+          <circle cx="90" cy="196" r="3" fill="none" stroke="#E8FF47" strokeWidth="1"/>
+        </g>
+
+        {/* "Generating" label top-left */}
+        <text className="des-gen-label" x="24" y="17" fill="#8A8A8A" fontFamily="DM Sans,sans-serif" fontSize="9">Generating extension…</text>
+
+        {/* "Design complete" chip */}
+        <rect className="des-chip" x="196" y="14" width="92" height="20" rx="10" fill="rgba(255,255,255,0.08)"/>
+        <text className="des-chip" x="242" y="27" textAnchor="middle" fill="#F5F5F5" fontFamily="DM Sans,sans-serif" fontSize="9" fontWeight="500">Design complete</text>
+      </svg>
+
+      <p className="s-section-label s-section-label--bl">The Design</p>
+    </section>
+  );
+}
+
+// ── Section 4: THE STREET ─────────────────────────────────────
+type StreetPhase = 0 | 1 | 2 | 3 | 4;
+
+function StreetSection() {
+  const { ref, inView } = useInView(0.3);
+  const [phase, setPhase] = useState<StreetPhase>(0);
+  const [visible, setVisible] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (!inView) return;
+    let cancelled = false;
+    const wait = (ms: number) => new Promise<void>(res => { const t = setTimeout(res, ms); if (cancelled) clearTimeout(t); });
+
+    async function loop() {
+      while (!cancelled) {
+        setPhase(0); setVisible([]);
+        await wait(1000);
+
+        setPhase(1);
+        for (let i = 0; i < 9 && !cancelled; i++) {
+          setVisible(v => [...v, i]);
+          await wait(150);
+        }
+        await wait(500);
+
+        setPhase(2);
+        await wait(2500);
+
+        setPhase(3);
+        await wait(2500);
+
+        setPhase(4);
+        await wait(1500);
+
+        // fade out then loop
+        setPhase(0); setVisible([]);
+        await wait(800);
+      }
+    }
+    loop();
+    return () => { cancelled = true; };
+  }, [inView]);
+
+  const houses = [
+    { h: 52, ext: false }, { h: 60, ext: true },  { h: 48, ext: false },
+    { h: 58, ext: true },  { h: 72, ext: false, yours: true },
+    { h: 55, ext: true },  { h: 50, ext: false }, { h: 62, ext: true },
+    { h: 46, ext: false },
+  ];
+
+  return (
+    <section ref={ref as React.RefObject<HTMLElement>} className="s-street" aria-label="The Street">
+      <div className="s-street-inner">
+        <div className="s-street-scene" aria-hidden="true">
+          {/* Ground line */}
+          <div className="st-ground"/>
+          {/* Houses */}
+          <div className="st-houses">
+            {houses.map((h, i) => (
+              <div key={i} className={`st-house${visible.includes(i) ? " st-house--vis" : ""}${h.yours ? " st-house--yours" : ""}`}
+                   style={{ transitionDelay: `${i * 50}ms` }}>
+                {h.ext && phase >= 2 && <span className="st-dot st-dot--ext"/>}
+                {!h.ext && phase >= 2 && <span className="st-dot st-dot--none"/>}
+                {/* Roof */}
+                <div className="st-roof" style={{ borderBottomWidth: `${Math.round(h.h * 0.35)}px` }}/>
+                <div className="st-body" style={{ height: `${h.h}px` }}>
+                  {phase >= 2 && i === 1 && <span className="st-tooltip">Approved 2022</span>}
+                  {phase >= 2 && i === 3 && <span className="st-tooltip">Single storey rear</span>}
+                  {phase >= 2 && i === 5 && <span className="st-tooltip">Cost est. £38k</span>}
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Stats callout */}
+          {phase >= 3 && (
+            <div className="st-stats">
+              <div className="st-stat">
+                <span className="st-stat-val">4</span>
+                <span className="st-stat-lbl">neighbours extended within 100m</span>
+              </div>
+              <div className="st-stat">
+                <span className="st-stat-val">100%</span>
+                <span className="st-stat-lbl">approval rate</span>
+              </div>
+            </div>
+          )}
+          {/* Footnote */}
+          {phase >= 4 && <p className="st-footnote">Data from Land Registry · Updated monthly</p>}
+        </div>
+      </div>
+      <p className="s-section-label s-section-label--bl">The Street</p>
+    </section>
+  );
+}
+
+// ── Section 5: THE RESULT ─────────────────────────────────────
+type ResultPhase = 0 | 1 | 2 | 3 | 4 | 5;
+
+function ResultSection() {
+  const { ref, inView } = useInView(0.3);
+  const [phase, setPhase] = useState<ResultPhase>(0);
+  const [count, setCount] = useState(0);
+  const [items, setItems] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (!inView) return;
+    let cancelled = false;
+    const wait = (ms: number) => new Promise<void>(res => { const t = setTimeout(res, ms); if (cancelled) clearTimeout(t); });
+
+    async function loop() {
+      while (!cancelled) {
+        setPhase(0); setCount(0); setItems([]);
+        await wait(500);
+
+        // Card 1 — Planning Check
+        setPhase(1);
+        for (let i = 0; i < 3 && !cancelled; i++) {
+          setItems(v => [...v, i]);
+          await wait(300);
+        }
+        await wait(700);
+
+        // Card 2 — Cost Estimate
+        setPhase(2);
+        const target = 42500;
+        const steps = 60;
+        for (let i = 1; i <= steps && !cancelled; i++) {
+          const ease = 1 - Math.pow(1 - i / steps, 3);
+          setCount(Math.round(target * ease));
+          await wait(1500 / steps);
+        }
+        await wait(600);
+
+        // Card 3 — AI Design
+        setPhase(3);
+        await wait(1500);
+
+        // All visible + glow
+        setPhase(4);
+        await wait(1500);
+
+        // Fade
+        setPhase(5);
+        await wait(500);
+      }
+    }
+    loop();
+    return () => { cancelled = true; };
+  }, [inView]);
+
+  return (
+    <section ref={ref as React.RefObject<HTMLElement>} className="s-result" aria-label="The Result">
+      <div className="s-result-inner">
+        {/* Card 1: Planning Check */}
+        <div className={`rc-card${phase >= 1 ? " rc-card--vis" : ""}${phase >= 4 ? " rc-card--glow" : ""}`}>
+          <p className="rc-header">Planning Check</p>
+          <ul className="rc-checks">
+            {[
+              "Permitted Development ✓",
+              "Rear extension — 4m permitted ✓",
+              "No Article 4 restrictions ✓",
+            ].map((txt, i) => (
+              <li key={i} className={`rc-check${items.includes(i) ? " rc-check--vis" : ""}`} style={{ transitionDelay: `${i * 80}ms` }}>
+                <span className="rc-tick">✓</span> {txt.replace(" ✓", "")}
+              </li>
+            ))}
+          </ul>
+          {items.length === 3 && (
+            <span className="rc-badge">Permitted Development</span>
+          )}
+        </div>
+
+        {/* Card 2: Cost Estimate */}
+        <div className={`rc-card${phase >= 2 ? " rc-card--vis" : ""}${phase >= 4 ? " rc-card--glow" : ""}`} style={{ transitionDelay: "0.15s" }}>
+          <p className="rc-header">Cost Estimate</p>
+          <p className="rc-cost">£{count.toLocaleString("en-GB")}</p>
+          <p className="rc-cost-sub">Typical build for 24.4 m² rear extension</p>
+          <div className="rc-bar-track">
+            <div className="rc-bar-fill" style={{ width: phase >= 2 ? "52%" : "0" }}/>
+          </div>
+        </div>
+
+        {/* Card 3: AI Design */}
+        <div className={`rc-card${phase >= 3 ? " rc-card--vis" : ""}${phase >= 4 ? " rc-card--glow" : ""}`} style={{ transitionDelay: "0.3s" }}>
+          <p className="rc-header">Your Design</p>
+          <div className="rc-plan-thumb" aria-hidden="true">
+            <svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+              <rect width="200" height="120" fill="#111111"/>
+              <rect x="10" y="10" width="90" height="60" fill="rgba(245,245,245,0.03)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
+              <rect x="100" y="10" width="60" height="34" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
+              <rect x="100" y="44" width="60" height="36" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
+              <rect x="10" y="70" width="90" height="40" fill="rgba(245,245,245,0.02)" stroke="rgba(245,245,245,0.2)" strokeWidth="1"/>
+              {/* Extension */}
+              <rect x="18" y="110" width="74" height="8" fill="rgba(232,255,71,0.15)" stroke="rgba(232,255,71,0.6)" strokeWidth="1"/>
+            </svg>
+          </div>
+          <p className="rc-spec">Rear extension — 4.2 × 5.8m</p>
+          <p className="rc-spec">Single storey, flat roof</p>
+        </div>
+      </div>
+      <p className="s-section-label s-section-label--bl">The Result</p>
+    </section>
+  );
+}
+
 export default function Home() {
   const scrolled = useNavScroll();
 
@@ -533,21 +836,33 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="site-footer">
-        <div className="footer-logo">Can I Extend</div>
-        <ul className="footer-links">
-          <li>
-            <a href="/privacy">Privacy</a>
-          </li>
-          <li>
-            <a href="/terms">Terms</a>
-          </li>
-          <li>
-            <a href="/contact">Contact</a>
-          </li>
-        </ul>
-        <div className="footer-copy">© 2026 Can I Extend Ltd</div>
+      {/* ── SECTION 3: THE DESIGN ── */}
+      <DesignSection />
+
+      {/* ── SECTION 4: THE STREET ── */}
+      <StreetSection />
+
+      {/* ── SECTION 5: THE RESULT ── */}
+      <ResultSection />
+
+      {/* ── SECTION 6: SINGLE CTA ── */}
+      <section className="s-cta-section" aria-label="Get started">
+        <div className="s-cta-inner">
+          <h2 className="s-cta-headline">Find out about your home.</h2>
+          <PostcodeForm />
+        </div>
+      </section>
+
+      {/* ── SECTION 7: FOOTER ── */}
+      <footer className="s-footer" role="contentinfo">
+        <span className="s-footer-logo">caniextend</span>
+        <nav className="s-footer-links" aria-label="Footer navigation">
+          <a href="/privacy">Privacy</a>
+          <span aria-hidden="true">·</span>
+          <a href="/terms">Terms</a>
+          <span aria-hidden="true">·</span>
+          <a href="/contact">Contact</a>
+        </nav>
       </footer>
     </>
   );

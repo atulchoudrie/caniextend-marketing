@@ -380,8 +380,14 @@ export default function NeighboursPage() {
 
   return (
     <>
-      {/* Inject keyframe for spinner */}
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      {/* Inject keyframes */}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes skeleton-pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.45; }
+        }
+      `}</style>
 
       <main
         style={{
@@ -573,6 +579,118 @@ export default function NeighboursPage() {
             )}
           </form>
         </section>
+
+        {/* ── Loading skeleton ── */}
+        {pageState === "loading" && (
+          <section
+            aria-busy="true"
+            aria-label="Loading results"
+            style={{
+              padding: "clamp(40px, 6vw, 80px) clamp(20px, 5vw, 48px)",
+              maxWidth: 960,
+              margin: "0 auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: "clamp(32px, 5vw, 56px)",
+            }}
+          >
+            {/* Skeleton header */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <div
+                style={{
+                  width: 80,
+                  height: 12,
+                  borderRadius: 4,
+                  background: "#f5f5f3",
+                  animation: "skeleton-pulse 1.4s ease-in-out infinite",
+                  opacity: 0.15,
+                }}
+              />
+              <div
+                style={{
+                  width: 160,
+                  height: 28,
+                  borderRadius: 6,
+                  background: "#f5f5f3",
+                  animation: "skeleton-pulse 1.4s ease-in-out infinite 0.1s",
+                  opacity: 0.15,
+                }}
+              />
+            </div>
+
+            {/* Skeleton stat grid — 4 placeholder cards */}
+            <div>
+              <div
+                style={{
+                  width: 120,
+                  height: 12,
+                  borderRadius: 4,
+                  marginBottom: 16,
+                  background: "#f5f5f3",
+                  animation: "skeleton-pulse 1.4s ease-in-out infinite",
+                  opacity: 0.15,
+                }}
+              />
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+                  gap: 12,
+                }}
+              >
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: "#f5f5f3",
+                      borderRadius: 8,
+                      padding: "20px 24px",
+                      minWidth: 0,
+                      minHeight: 96,
+                      animation: `skeleton-pulse 1.4s ease-in-out infinite ${i * 0.12}s`,
+                      opacity: 0.12,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Skeleton street bar — placeholder for neighbour card list */}
+            <div>
+              <div
+                style={{
+                  width: 140,
+                  height: 12,
+                  borderRadius: 4,
+                  marginBottom: 16,
+                  background: "#f5f5f3",
+                  animation: "skeleton-pulse 1.4s ease-in-out infinite",
+                  opacity: 0.15,
+                }}
+              />
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                  gap: 10,
+                }}
+              >
+                {[0, 1, 2, 3, 4, 5].map((i) => (
+                  <div
+                    key={i}
+                    style={{
+                      background: "#f5f5f3",
+                      borderRadius: 8,
+                      height: 80,
+                      animation: `skeleton-pulse 1.4s ease-in-out infinite ${i * 0.1}s`,
+                      opacity: 0.1,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* ── Results section ── */}
         {pageState === "results" && results && (
