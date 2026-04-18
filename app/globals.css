@@ -1479,6 +1479,52 @@ body {
   .s-context { top: 24px; left: 24px; right: 24px; }
   .s-context-text { font-size: 16px; }
 }
+.s-context--upload {
+  top: 32px;
+}
+.s-context-bullets {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.s-context-bullet {
+  font-size: clamp(12px, 1.4vw, 14px);
+  color: rgba(245,245,245,0.45);
+  line-height: 1.4;
+  padding-left: 16px;
+  position: relative;
+}
+.s-context-bullet::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: var(--accent, rgba(232,255,71,0.6));
+}
+.s-context-stat {
+  margin-top: 20px;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.s-context-stat-val {
+  font-family: var(--font-sans);
+  font-size: clamp(28px, 3.5vw, 40px);
+  font-weight: 700;
+  color: var(--accent, rgba(232,255,71,0.9));
+  line-height: 1;
+}
+.s-context-stat-lbl {
+  font-size: clamp(11px, 1.3vw, 13px);
+  color: rgba(245,245,245,0.45);
+  max-width: 180px;
+  line-height: 1.3;
+}
+@media (max-width: 640px) {
+  .s-context-stat-val { font-size: 28px; }
+}
 
 /* ── Section 3: THE DESIGN ─── */
 .s-design {

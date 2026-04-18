@@ -547,6 +547,34 @@ function PostcodeForm() {
   );
 }
 
+// ── Section 2: THE UPLOAD ─────────────────────────────────────
+function UploadSection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const contextRef = useRef<HTMLDivElement>(null);
+
+  useScrollProgress(sectionRef, (progress) => {
+    if (contextRef.current) {
+      const ct = Math.min(1, Math.max(0, (progress - 0.05) / 0.3));
+      contextRef.current.style.opacity = String(ct);
+      contextRef.current.style.transform = `translateY(${(1 - ct) * 14}px)`;
+    }
+  });
+
+  return (
+    <section ref={sectionRef as React.RefObject<HTMLElement>} className="s-upload" aria-label="Upload your floorplan">
+      <div ref={contextRef} className="s-context s-context--upload">
+        <p className="s-context-text">Drop any floorplan — PDF, photo, or scan. Our AI identifies rooms, walls, and dimensions in seconds.</p>
+      </div>
+      <div className="s-upload-inner">
+        <p className="s-section-label">Upload your floorplan</p>
+        <div className="s-upload-demo">
+          <UploadDemo />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Section 3: THE DESIGN ─────────────────────────────────────
 function DesignSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -614,6 +642,15 @@ function DesignSection() {
       <div ref={contextRef} className="s-context">
         <p className="s-context-step">Step 1</p>
         <p className="s-context-text">Our AI designs your extension — optimised for your floorplan, within permitted development limits.</p>
+        <ul className="s-context-bullets" aria-label="How it works">
+          <li className="s-context-bullet">Checks Permitted Development rights automatically</li>
+          <li className="s-context-bullet">Covers Article 4 directions + conservation areas</li>
+          <li className="s-context-bullet">Updated when guidance changes</li>
+        </ul>
+        <div className="s-context-stat">
+          <span className="s-context-stat-val">94%</span>
+          <span className="s-context-stat-lbl">confirm PD eligibility first time</span>
+        </div>
       </div>
       <svg
         ref={svgRef}
@@ -776,6 +813,15 @@ function StreetSection() {
       <div ref={contextRef} className="s-context">
         <p className="s-context-step">Step 2</p>
         <p className="s-context-text">See which neighbours have extended, what they built, and whether they got approval.</p>
+        <ul className="s-context-bullets" aria-label="What we check">
+          <li className="s-context-bullet">Land Registry data on every neighbour within 100m</li>
+          <li className="s-context-bullet">Compares extension size, status, materials</li>
+          <li className="s-context-bullet">Know what your street approved</li>
+        </ul>
+        <div className="s-context-stat">
+          <span className="s-context-stat-val">3×</span>
+          <span className="s-context-stat-lbl">more likely to succeed with precedent data</span>
+        </div>
       </div>
       <div className="s-street-inner">
         <div className="s-street-scene" aria-hidden="true">
@@ -886,6 +932,15 @@ function ResultSection() {
       <div ref={contextRef} className="s-context">
         <p className="s-context-step">Step 3</p>
         <p className="s-context-text">Get your planning check, cost estimate, and full extension design — all in one report.</p>
+        <ul className="s-context-bullets" aria-label="What's included">
+          <li className="s-context-bullet">Itemised costs by trade (BCIS regional data)</li>
+          <li className="s-context-bullet">Updated quarterly</li>
+          <li className="s-context-bullet">Covers planning, structural, and design</li>
+        </ul>
+        <div className="s-context-stat">
+          <span className="s-context-stat-val">±8%</span>
+          <span className="s-context-stat-lbl">accuracy vs actual builder quotes</span>
+        </div>
       </div>
       <div className="s-result-inner">
         <div ref={card1Ref} className="rc-card">
@@ -1009,14 +1064,7 @@ export default function Home() {
       </div>
 
       {/* ── SECTION 2: THE UPLOAD ── */}
-      <section className="s-upload" aria-label="Upload your floorplan">
-        <div className="s-upload-inner">
-          <p className="s-section-label">Upload your floorplan</p>
-          <div className="s-upload-demo">
-            <UploadDemo />
-          </div>
-        </div>
-      </section>
+      <UploadSection />
 
       {/* ── SECTION 3: THE DESIGN ── */}
       <DesignSection />
