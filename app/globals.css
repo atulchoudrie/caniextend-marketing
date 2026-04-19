@@ -1907,6 +1907,38 @@ body {
   .s-footer { padding: 0 24px; height: auto; min-height: 120px; flex-direction: column; gap: 16px; justify-content: center; }
 }
 
+/* ── Scroll-driven text animations (AIF-2242) ── */
+.word-wrap {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+.word-inner {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+.word-inner--vis {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (max-width: 640px) {
+  .word-inner { transform: translateY(17px); }
+}
+.s-context-bullets--anim .s-context-bullet {
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+.s-context-stat-val { display: inline-block; }
+@keyframes stat-pulse {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
 /* ── Reduced motion — sections 3–7 ── */
 @media (prefers-reduced-motion: reduce) {
   .des-candidate, .des-cursor, .des-gen-label,
@@ -1925,4 +1957,6 @@ body {
   .st-tooltip { opacity: 1 !important; transform: translateX(-50%) translateY(0) !important; transition: none !important; }
   .st-stats, .st-stats--vis { opacity: 1 !important; transform: none !important; transition: none !important; }
   .st-footnote, .st-footnote--vis { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .word-inner { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .s-context-bullets--anim .s-context-bullet { opacity: 1 !important; transition: none !important; }
 }

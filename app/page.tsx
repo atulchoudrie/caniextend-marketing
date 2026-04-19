@@ -45,6 +45,74 @@ function useScrollProgress(
   }, []);
 }
 
+// One-shot IntersectionObserver — fires the callback once, then disconnects.
+function useInViewOnce(
+  ref: React.RefObject<HTMLElement | null>,
+  callback: () => void,
+  threshold = 0.2
+): void {
+  const cbRef = useRef(callback);
+  cbRef.current = callback;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let done = false;
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting && !done) {
+          done = true;
+          obs.disconnect();
+          cbRef.current();
+        }
+      },
+      { threshold }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
+// Runs a counter from 0 → target over 1.2s (ease-out cubic), then pulses the container.
+function animateStat(numEl: HTMLElement, valEl: HTMLElement, target: number): void {
+  const start = performance.now();
+  const duration = 1200;
+  function frame(now: number) {
+    const t = Math.min(1, (now - start) / duration);
+    numEl.textContent = String(Math.round((1 - Math.pow(1 - t, 3)) * target));
+    if (t < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      numEl.textContent = String(target);
+      valEl.style.animation = "none";
+      void valEl.offsetWidth;
+      valEl.style.animation = "stat-pulse 0.2s ease-out forwards";
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+// Reveals word-inner spans with staggered delays, then fades in bullets after headline resolves.
+function animateContextBlock(
+  headlineEl: HTMLParagraphElement,
+  bulletsEl: HTMLUListElement | null
+): void {
+  const words = headlineEl.querySelectorAll<HTMLElement>(".word-inner");
+  words.forEach((w, i) => {
+    w.style.transitionDelay = `${i * 60}ms`;
+  });
+  // Double rAF ensures browser has painted the initial hidden state before transition fires.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    words.forEach(w => w.classList.add("word-inner--vis"));
+    if (bulletsEl) {
+      const bulletDelay = (words.length - 1) * 60 + 400;
+      Array.from(bulletsEl.children).forEach((b, i) => {
+        setTimeout(() => { (b as HTMLElement).style.opacity = "1"; }, bulletDelay + i * 80);
+      });
+    }
+  }));
+}
+
 type UploadPhase = "idle" | "dragging" | "dropped" | "processing" | "scanning" | "detecting" | "complete";
 
 function useNavScroll() {
@@ -579,8 +647,17 @@ function UploadSection() {
 function DesignSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const contextRef = useRef<HTMLDivElement>(null);
+  const headlineRef = useRef<HTMLParagraphElement>(null);
+  const bulletsRef = useRef<HTMLUListElement>(null);
+  const statValRef = useRef<HTMLSpanElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const svgElemsRef = useRef<Record<string, SVGElement | null>>({});
+
+  useInViewOnce(sectionRef, () => {
+    if (headlineRef.current) animateContextBlock(headlineRef.current, bulletsRef.current);
+    const numEl = statValRef.current?.querySelector<HTMLElement>(".stat-num");
+    if (numEl && statValRef.current) animateStat(numEl, statValRef.current, 94);
+  });
 
   useEffect(() => {
     const svg = svgRef.current;
@@ -641,14 +718,18 @@ function DesignSection() {
     >
       <div ref={contextRef} className="s-context">
         <p className="s-context-step">Step 1</p>
-        <p className="s-context-text">Our AI designs your extension — optimised for your floorplan, within permitted development limits.</p>
-        <ul className="s-context-bullets" aria-label="How it works">
+        <p ref={headlineRef} className="s-context-text">
+          {"Our AI designs your extension — optimised for your floorplan, within permitted development limits.".split(" ").map((word, i, arr) => (
+            <span key={i} className="word-wrap"><span className="word-inner">{word}</span>{i < arr.length - 1 ? " " : ""}</span>
+          ))}
+        </p>
+        <ul ref={bulletsRef} className="s-context-bullets s-context-bullets--anim" aria-label="How it works">
           <li className="s-context-bullet">Checks Permitted Development rights automatically</li>
           <li className="s-context-bullet">Covers Article 4 directions + conservation areas</li>
           <li className="s-context-bullet">Updated when guidance changes</li>
         </ul>
         <div className="s-context-stat">
-          <span className="s-context-stat-val">94%</span>
+          <span ref={statValRef} className="s-context-stat-val"><span className="stat-num">94</span>%</span>
           <span className="s-context-stat-lbl">confirm PD eligibility first time</span>
         </div>
       </div>
@@ -760,11 +841,20 @@ const STREET_HOUSES: { h: number; ext: boolean; yours?: boolean }[] = [
 function StreetSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const contextRef = useRef<HTMLDivElement>(null);
+  const headlineRef = useRef<HTMLParagraphElement>(null);
+  const bulletsRef = useRef<HTMLUListElement>(null);
+  const statValRef = useRef<HTMLSpanElement>(null);
   const housesRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const footnoteRef = useRef<HTMLParagraphElement>(null);
 
   const prevRef = useRef({ dots: false, stats: false, footnote: false, visibleCount: -1 });
+
+  useInViewOnce(sectionRef, () => {
+    if (headlineRef.current) animateContextBlock(headlineRef.current, bulletsRef.current);
+    const numEl = statValRef.current?.querySelector<HTMLElement>(".stat-num");
+    if (numEl && statValRef.current) animateStat(numEl, statValRef.current, 3);
+  });
 
   useScrollProgress(sectionRef, (progress) => {
     const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
@@ -812,14 +902,18 @@ function StreetSection() {
     <section ref={sectionRef as React.RefObject<HTMLElement>} className="s-street" aria-label="The Street">
       <div ref={contextRef} className="s-context">
         <p className="s-context-step">Step 2</p>
-        <p className="s-context-text">See which neighbours have extended, what they built, and whether they got approval.</p>
-        <ul className="s-context-bullets" aria-label="What we check">
+        <p ref={headlineRef} className="s-context-text">
+          {"See which neighbours have extended, what they built, and whether they got approval.".split(" ").map((word, i, arr) => (
+            <span key={i} className="word-wrap"><span className="word-inner">{word}</span>{i < arr.length - 1 ? " " : ""}</span>
+          ))}
+        </p>
+        <ul ref={bulletsRef} className="s-context-bullets s-context-bullets--anim" aria-label="What we check">
           <li className="s-context-bullet">Land Registry data on every neighbour within 100m</li>
           <li className="s-context-bullet">Compares extension size, status, materials</li>
           <li className="s-context-bullet">Know what your street approved</li>
         </ul>
         <div className="s-context-stat">
-          <span className="s-context-stat-val">3×</span>
+          <span ref={statValRef} className="s-context-stat-val"><span className="stat-num">3</span>×</span>
           <span className="s-context-stat-lbl">more likely to succeed with precedent data</span>
         </div>
       </div>
@@ -865,6 +959,9 @@ function StreetSection() {
 function ResultSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const contextRef = useRef<HTMLDivElement>(null);
+  const headlineRef = useRef<HTMLParagraphElement>(null);
+  const bulletsRef = useRef<HTMLUListElement>(null);
+  const statValRef = useRef<HTMLSpanElement>(null);
   const card1Ref = useRef<HTMLDivElement>(null);
   const card2Ref = useRef<HTMLDivElement>(null);
   const card3Ref = useRef<HTMLDivElement>(null);
@@ -874,6 +971,12 @@ function ResultSection() {
   const badgeRef = useRef<HTMLSpanElement>(null);
 
   const prevBadgeRef = useRef(false);
+
+  useInViewOnce(sectionRef, () => {
+    if (headlineRef.current) animateContextBlock(headlineRef.current, bulletsRef.current);
+    const numEl = statValRef.current?.querySelector<HTMLElement>(".stat-num");
+    if (numEl && statValRef.current) animateStat(numEl, statValRef.current, 8);
+  });
 
   useScrollProgress(sectionRef, (progress) => {
     const p = Math.max(0, Math.min(1, (progress - 0.15) / 0.55));
@@ -931,14 +1034,18 @@ function ResultSection() {
     <section ref={sectionRef as React.RefObject<HTMLElement>} className="s-result" aria-label="The Result">
       <div ref={contextRef} className="s-context">
         <p className="s-context-step">Step 3</p>
-        <p className="s-context-text">Get your planning check, cost estimate, and full extension design — all in one report.</p>
-        <ul className="s-context-bullets" aria-label="What's included">
+        <p ref={headlineRef} className="s-context-text">
+          {"Get your planning check, cost estimate, and full extension design — all in one report.".split(" ").map((word, i, arr) => (
+            <span key={i} className="word-wrap"><span className="word-inner">{word}</span>{i < arr.length - 1 ? " " : ""}</span>
+          ))}
+        </p>
+        <ul ref={bulletsRef} className="s-context-bullets s-context-bullets--anim" aria-label="What's included">
           <li className="s-context-bullet">Itemised costs by trade (BCIS regional data)</li>
           <li className="s-context-bullet">Updated quarterly</li>
           <li className="s-context-bullet">Covers planning, structural, and design</li>
         </ul>
         <div className="s-context-stat">
-          <span className="s-context-stat-val">±8%</span>
+          <span ref={statValRef} className="s-context-stat-val">±<span className="stat-num">8</span>%</span>
           <span className="s-context-stat-lbl">accuracy vs actual builder quotes</span>
         </div>
       </div>
